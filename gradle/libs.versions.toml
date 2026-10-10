@@ -15,21 +15,13 @@ androidxLifecycle = "2.10.0"
 ksp = "2.3.4"
 protobufPlugin = "0.9.6"
 androidxDatastore = "1.2.0"
-firebaseBom = "34.6.0"
-gms = "4.4.4"
-firebaseCrashlyticsPlugin = "3.0.6"
-firebasePerfPlugin = "2.0.2"
 confettikit = "0.8.0"
 ktor = "3.5.0"
 coil = "3.4.0"
 cloudy = "0.4.0"
 nav3Core = "1.1.0"
 paging = "3.5.0"
-playAppUpdate = "2.1.0"
-playAppReview = "2.0.2"
 deviceCompat = "2.0"
-shizuku = "13.1.5"
-xposed = "82"
 composeMultiplatformAdaptive = "1.3.0-beta01"
 multiplatformNav3Ui = "1.1.1"
 documentfile = "1.1.0"
@@ -80,14 +72,6 @@ koin-core = { module = "io.insert-koin:koin-core" }
 kmp-nativecoroutines-annotations = { group = "com.rickclephas.kmp", name = "kmp-nativecoroutines-annotations", version.ref = "kmpNativeCoroutines" }
 androidx-datastore-core = { group = "androidx.datastore", name = "datastore-core", version.ref = "androidxDatastore" }
 androidx-datastore-core-okio = { group = "androidx.datastore", name = "datastore-core-okio", version.ref = "androidxDatastore" }
-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
-firebase-inappmessaging-display = { group = "com.google.firebase", name = "firebase-inappmessaging-display" }
-firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
-firebase-config = { group = "com.google.firebase", name = "firebase-config" }
-firebase-crashlytics-ndk = { group = "com.google.firebase", name = "firebase-crashlytics-ndk" }
-firebase-perf = { group = "com.google.firebase", name = "firebase-perf" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
@@ -107,8 +91,6 @@ compose-multiplatform-gradlePlugin = { module = "org.jetbrains.compose:compose-g
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-cloudy = { module = "com.github.skydoves:cloudy", version.ref = "cloudy" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
-play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "playAppUpdate" }
-play-app-review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "playAppReview" }
 ksoup-network = { module = "com.fleeksoft.ksoup:ksoup-network", version.ref = "ksoup" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJson" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -128,10 +110,6 @@ jetbrains-material3-adaptive-navigation3 = { module = "org.jetbrains.compose.mat
 
 device-compat = { module = "com.github.getActivity:DeviceCompat", version.ref = "deviceCompat" }
 
-shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
-shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
-
-xposed-api = { module = "de.robv.android.xposed:api", version.ref = "xposed" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
 
 # Testing
@@ -168,9 +146,6 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
-gms-google-services = { id = "com.google.gms.google-services", version.ref = "gms" }
-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
-firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-parcelize = { id = "kotlin-parcelize" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
@@ -185,5 +160,4 @@ bilibilias-android-application = { id = "bilibilias.android.application" }
 bilibilias-android-koin = { id = "bilibilias.android.koin" }
 bilibilias-multiplatform-koin = { id = "bilibilias.multiplatform.koin" }
 bilibilias-android-ffmpegVerification = { id = "bilibilias.android.ffmpegVerification" }
-bilibilias-jvm-library = { id = "bilibilias.jvm.library" }
 bilibilias-multiplatform-library = { id = "bilibilias.multiplatform.library" }
