@@ -4,10 +4,6 @@ import com.imcys.bilibilias.buildlogic.BILIBILIASBuildType
 plugins {
     alias(libs.plugins.bilibilias.android.application)
     alias(libs.plugins.bilibilias.android.koin)
-    alias(libs.plugins.bilibilias.baidu.jar)
-    alias(libs.plugins.gms.google.services)
-    alias(libs.plugins.firebase.crashlytics)
-    alias(libs.plugins.firebase.perf)
     alias(libs.plugins.kotlin.plugin.serialization)
     alias { libs.plugins.kotlin.parcelize }
     alias(libs.plugins.ksp)
@@ -136,33 +132,13 @@ android {
     }
 
 }
-if (!enabledPlayAppMode.toBoolean() && enabledAnalytics.toBoolean()) {
-    /**
-     * 百度统计静态清单合并
-     */
-    androidComponents {
-        onVariants { variant ->
-            variant.sources.manifests.addStaticManifestFile("src/baidu/AndroidManifest.xml")
-        }
-    }
-}
-
 dependencies {
     implementation(project(":shared"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.ffmpeg.kit.x6kb)
 
-    // Firebase 选配
-    firebaseDependencies(enabledAnalytics.toBoolean())
-
     implementation(libs.androidx.documentfile)
-
-    // Google Play 选配
-    googlePlayDependencies(enabledPlayAppMode.toBoolean())
-
-    // 百度统计
-    baiduStatDependencies()
 
     // Native MCP
     implementation(libs.appfunctions)
@@ -177,58 +153,3 @@ dependencies {
 
 }
 
-// 百度统计依赖配置
-fun DependencyHandlerScope.baiduStatDependencies() {
-    val baiduJar = fileTree("libs") { include("Baidu_Mtj_android_*.jar") }
-    if (!baiduJar.isEmpty) {
-        if (enabledAnalytics.toBoolean() && !enabledPlayAppMode.toBoolean()) {
-            implementation(baiduJar)
-        } else {
-            compileOnly(baiduJar)
-        }
-    }
-}
-
-// Google Play 依赖配置
-fun DependencyHandlerScope.googlePlayDependencies(enabled: Boolean) {
-    val googlePlayLibs = listOf(
-        libs.play.app.update.ktx,
-        libs.play.app.review.ktx
-    )
-    googlePlayLibs.forEach {
-        if (enabled) {
-            implementation(it)
-        } else {
-            compileOnly(it)
-        }
-    }
-}
-
-
-// Firebase 依赖配置
-fun DependencyHandlerScope.firebaseDependencies(enabled: Boolean) {
-    if (enabled) {
-        implementation(platform(libs.firebase.bom))
-        implementation(libs.firebase.crashlytics)
-        implementation(libs.firebase.crashlytics.ndk)
-        implementation(libs.firebase.analytics)
-        implementation(libs.firebase.config)
-        implementation(libs.firebase.messaging)
-        implementation(libs.firebase.inappmessaging.display) {
-            exclude(group = "com.google.firebase", module = "protolite-well-known-types")
-        }
-        implementation(libs.firebase.perf) {
-            exclude(group = "com.google.protobuf", module = "protobuf-javalite")
-            exclude(group = "com.google.firebase", module = "protolite-well-known-types")
-        }
-    } else {
-        compileOnly(platform(libs.firebase.bom))
-        compileOnly(libs.firebase.crashlytics)
-        compileOnly(libs.firebase.crashlytics.ndk)
-        compileOnly(libs.firebase.analytics)
-        compileOnly(libs.firebase.config)
-        compileOnly(libs.firebase.messaging)
-        compileOnly(libs.firebase.inappmessaging.display)
-        compileOnly(libs.firebase.perf)
-    }
-}

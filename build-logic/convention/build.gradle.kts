@@ -64,12 +64,6 @@ gradlePlugin {
             version = "unspecified"
         }
 
-        register("baiduJar"){
-            id = libs.plugins.bilibilias.baidu.jar.get().pluginId
-            implementationClass = "BaiduJarDownloadConventionPlugin"
-            version = "unspecified"
-        }
-
         register("jvmLibrary"){
             id = libs.plugins.bilibilias.jvm.library.get().pluginId
             implementationClass = "JvmLibraryConventionPlugin"

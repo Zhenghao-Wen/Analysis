@@ -187,4 +187,3 @@ bilibilias-multiplatform-koin = { id = "bilibilias.multiplatform.koin" }
 bilibilias-android-ffmpegVerification = { id = "bilibilias.android.ffmpegVerification" }
 bilibilias-jvm-library = { id = "bilibilias.jvm.library" }
 bilibilias-multiplatform-library = { id = "bilibilias.multiplatform.library" }
-bilibilias-baidu-jar = { id = "bilibilias.baidu.jar" }
