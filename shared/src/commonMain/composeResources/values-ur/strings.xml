@@ -1,6 +1,6 @@
 <resources>
     <string name="common_privacy_policy">رازداری کی پالیسی</string>
-    <string name="app_privacy_policy_tip"><![CDATA["\n BILIBILIAS فائر بیس کو استعمال کرتا ہے تا کہ استعمال کے ڈیٹا کی شماریات اور ریموٹ ترتیب فراہم کی جا سکے، اس کا مطلب ہے کہ فائر بیس آپ کی کچھ ڈیوائس کی معلومات اور استعمال کے اعداد و شمار جمع کرے گا، لہذا آپ کو درج ذیل <a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">رازداری کی پالیسی</a> سے اتفاق کرنا ہوگا۔\n اگر آپ مندرجہ بالا رازداری کی پالیسی سے اتفاق نہیں کرتے تو ایپ کو کنفیگریشن موصول نہیں ہو سکتی اور شاید ٹھیک طرح نہ چل سکے۔ لنک پر کلک کریں اور <a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">رازداری کی پالیسی پڑھیں</a>۔\n "]]></string>
+    <string name="app_privacy_policy_tip"><![CDATA["\n BILIBILIAS ریموٹ ترتیب فراہم کرنے کے لیے کسی تیسرے فریق کی سروس استعمال کرتا ہے، لہذا آپ کو درج ذیل <a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">رازداری کی پالیسی</a> سے اتفاق کرنا ہوگا۔\n اگر آپ مندرجہ بالا رازداری کی پالیسی سے اتفاق نہیں کرتے تو ایپ کو کنفیگریشن موصول نہیں ہو سکتی اور شاید ٹھیک طرح نہ چل سکے۔ لنک پر کلک کریں اور <a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">رازداری کی پالیسی پڑھیں</a>۔\n "]]></string>
     <string name="common_agree">اتفاق</string>
     <string name="common_refuse">رد کریں</string>
     <string name="common_cancel">منسوخ کریں</string>

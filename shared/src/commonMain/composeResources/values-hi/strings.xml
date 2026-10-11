@@ -2,7 +2,7 @@
     <!-- Common strings -->
     <string name="common_privacy_policy">गोपनीयता नीति</string>
     <string name="app_privacy_policy_tip"><![CDATA[
-\nBILIBILIAS Firebase का उपयोग डेटा और रिमोट कॉन्फ़िगरेशन प्राप्त करने के लिए करता है, इसका मतलब है कि Firebase आपके डिवाइस की कुछ जानकारी और उपयोग आंकड़े एकत्र करेगा। इसलिए आपको नीचे दी गई <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">गोपनीयता नीति</a> से सहमत होना आवश्यक है।
+\nBILIBILIAS रिमोट कॉन्फ़िगरेशन प्राप्त करने के लिए तीसरे पक्ष की सेवा का उपयोग करता है। इसलिए आपको नीचे दी गई <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">गोपनीयता नीति</a> से सहमत होना आवश्यक है।
 यदि आप ऊपर दी गई गोपनीयता नीति से सहमत नहीं हैं, तो ऐप आवश्यक कॉन्फ़िगरेशन नहीं प्राप्त कर पाएगा और सामान्य रूप से कार्य नहीं कर पाएगा। लिंक पर क्लिक करें <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">गोपनीयता नीति पढ़ें</a>।
     ]]></string>
     <string name="common_agree">सहमत</string>

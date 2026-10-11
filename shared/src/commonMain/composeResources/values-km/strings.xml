@@ -2,7 +2,7 @@
     <!-- Common strings -->
     <string name="common_privacy_policy">គោលនយោបាយភាពឯកជន</string>
     <string name="app_privacy_policy_tip"><![CDATA[
-\nBILIBILIAS ប្រើប្រាស់ Firebase ដើម្បីប្រមូលទិន្នន័យ​និងកំណត់រចនាសម្ព័ន្ធចូលចីក។ វាមានន័យថា Firebase នឹងប្រមូលពត៌មានអ្នក និងប្រើប្រាស់ឧបករណ៍។ ដូច្នេះ អ្នកត្រូវតែយល់ព្រមនឹង <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">គោលនយោបាយភាពឯកជន</a> ខាងក្រោម។
+\nBILIBILIAS ប្រើប្រាស់សេវាកម្មភាគីទីបីដើម្បីកំណត់រចនាសម្ព័ន្ធពីចម្ងាយ។ ដូច្នេះ អ្នកត្រូវតែយល់ព្រមនឹង <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">គោលនយោបាយភាពឯកជន</a> ខាងក្រោម។
 បើអ្នកមិនយល់ព្រមនឹងគោលនយោបាយនេះទេ អាប់នឹងអាចប្រើប្រាស់App ធម្មតាមិនបាន។ ចុចតំណនេះដើម្បី <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">អានគោលនយោបាយភាពឯកជន</a>។
     ]]></string>
     <string name="common_agree">យល់ព្រម</string>

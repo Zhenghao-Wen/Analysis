@@ -3,7 +3,7 @@
     <string name="common_privacy_policy">سياسة الخصوصية</string>
     <string name="app_privacy_policy_tip">
         <![CDATA[
-\nيستخدم BILIBILIAS خدمة Firebase لجمع بيانات الاستخدام وتوفير الإعدادات عن بُعد، ما يعني أن Firebase سيجمع بعض معلومات جهازك واستخدامك. لذلك، عليك الموافقة على <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">سياسة الخصوصية</a> التالية.
+\nيستخدم BILIBILIAS خدمة طرف ثالث لتوفير الإعدادات عن بُعد. لذلك، عليك الموافقة على <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">سياسة الخصوصية</a> التالية.
 إذا لم توافق على سياسة الخصوصية، فقد لا يستطيع التطبيق تلقي الإعدادات اللازمة وقد لا يعمل بشكل طبيعي. انقر على الرابط لقراءة <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">سياسة الخصوصية</a>.
         ]]>
     </string>
