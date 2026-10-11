@@ -102,21 +102,9 @@ object API {
 
     }
 
-    object App {
-        const val SSE_HOST = "api.misakamoe.com"
-        const val SSE_PORT = 80
-        const val SSE_PATH = "/bilibilias/events/subscribe"
-        const val BASE_URL = "https://$SSE_HOST/api/v2/"
-
-        const val OLD_BASE_URL = "https://$SSE_HOST/"
-
-        const val OLD_APP_FUNCTION_URL = OLD_BASE_URL + "app/AppFunction.php"
-
-        const val OLD_APP_INFO_URL: String = OLD_BASE_URL + "app/bilibilias.php"
-
-        const val OLD_VIDEO_DATA_POST_URL = OLD_BASE_URL + "bilibili/AppVideoAsAdd.php"
-    }
-
+    // 旧版自建后端（api.misakamoe.com）的地址常量已移除。
+    // 本仓库不再请求任何 imcys.com / misakamoe.com 的第三方网络服务，
+    // AppAPIService 已整体停用（见 core:network 的 AppAPIService.kt）。
 
     object Bgm {
         const val API_BASE_URL = "https://api.bgm.tv/"

@@ -110,7 +110,6 @@ import com.imcys.bilibilias.ui.utils.rememberWidthSizeClass
 import com.imcys.bilibilias.ui.component.ASAlertDialog
 import com.imcys.bilibilias.ui.component.ASAsyncImage
 import com.imcys.bilibilias.ui.component.ASCardTextField
-import com.imcys.bilibilias.ui.component.ASHorizontalCenteredHeroCarousel
 import com.imcys.bilibilias.ui.component.ASIconButton
 import com.imcys.bilibilias.ui.component.ASTextButton
 import com.imcys.bilibilias.ui.component.ASTopAppBar
@@ -122,7 +121,6 @@ import com.imcys.bilibilias.shared.ui.component.ASLoginPlatformFilterChipRow
 import com.imcys.bilibilias.shared.ui.component.AsAutoError
 import com.imcys.bilibilias.shared.ui.component.DownloadTaskCard
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -333,7 +331,6 @@ private fun HomeContent(
 ) {
     val vm = koinViewModel<HomeViewModel>()
 
-    val bannerList by vm.bannerList.collectAsStateWithLifecycle()
     val bulletinInfo by vm.bulletinInfo.collectAsStateWithLifecycle()
     val appSettings by vm.appSettingsState.collectAsStateWithLifecycle()
     val appUpdateInfo by vm.appUpdateInfo.collectAsStateWithLifecycle()
@@ -430,131 +427,6 @@ private fun HomeContent(
             homeLayoutTypesetList.forEach { layout ->
                 if (!layout.isHidden) {
                     when (layout.type) {
-                        AppSettings.HomeLayoutType.Banner if (!ASBuildConfig.ENABLED_PLAY_APP_MODE && bannerList.isNotEmpty()) -> {
-                            item {
-                                ASHorizontalCenteredHeroCarousel(
-                                    autoScroll = true,
-                                    modifier = Modifier
-                                        .animateItem()
-                                        .animateContentSize(),
-                                    items = bannerList
-                                ) { item ->
-                                    Box(Modifier.maskClip(CardDefaults.shape)) {
-                                        ASAsyncImage(
-                                            model = item.url,
-                                            contentDescription = "",
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(168.dp)
-                                                .maskClip(CardDefaults.shape),
-                                            shape = CardDefaults.shape,
-                                            onClick = {
-                                                // 跳转链接
-                                                openLink(item.ref)
-                                            }
-                                        )
-
-                                        // 渐变黑色背景 + 文本
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .align(Alignment.BottomStart)
-                                                .background(
-                                                    brush = Brush.verticalGradient(
-                                                        colors = listOf(
-                                                            Color.Transparent,
-                                                            Color.Black.copy(alpha = 0.8f)
-                                                        )
-                                                    )
-                                                )
-                                        ) {
-                                            Text(
-                                                item.title,
-                                                fontSize = 20.sp,
-                                                fontWeight = FontWeight.W500,
-                                                color = Color.White,
-                                                maxLines = 2,
-                                                overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier
-                                                    .padding(10.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        AppSettings.HomeLayoutType.Announcement -> {
-                            if (appSettings.lastBulletinContent == bulletinInfo?.content) {
-                                // 内容相同，不展示
-                                return@forEach
-                            }
-                            item {
-                                CommonInfoCard(
-                                    modifier = Modifier
-                                        .animateItem()
-                                        .animateContentSize(),
-                                    Res.drawable.ic_brand_awareness_24px,
-                                    "公告",
-                                    bulletinInfo?.content ?: "暂无最新公告",
-                                    onClickClose = {
-                                        closeBulletinDialogShow = true
-                                    },
-                                    onClick = {
-                                        if (bulletinInfo?.content.isNullOrEmpty()) return@CommonInfoCard
-                                        bulletinDialogShow = true
-                                    }
-                                )
-                            }
-                        }
-
-                        AppSettings.HomeLayoutType.UpdateInfo -> {
-
-                            // Google Play 应用商店版本不展示更新内容
-                            if (ASBuildConfig.ENABLED_PLAY_APP_MODE) return@forEach
-
-                            if (getAppVersion().second == appSettings.lastSkipUpdateVersion) {
-                                // 版本相同，不展示
-                                return@forEach
-                            }
-
-                            // if (appUpdateInfo?.version == null) return@forEach
-                            if (appUpdateInfo?.feat.isNullOrEmpty() || appUpdateInfo?.fix.isNullOrEmpty()) {
-                                return@forEach
-                            }
-
-                            if (appUpdateInfo?.version == getAppVersion().second) {
-                                return@forEach
-                            }
-
-                            item {
-                                val content = when (getASBuildType(ASBuildType.ALPHA.name)) {
-                                    ASBuildType.OFFICIAL,
-                                    ASBuildType.BETA -> {
-                                        """
-                                    新增：
-                                    ${appUpdateInfo?.feat}
-                                    修复：
-                                    ${appUpdateInfo?.fix}
-                                """.trimIndent()
-                                    }
-
-                                    ASBuildType.ALPHA -> appUpdateInfo?.feat
-                                        ?: "Alpha版本请关注频道更新通知或GitHub Action构建。"
-                                }
-                                CommonInfoCard(
-                                    modifier = Modifier
-                                        .animateItem()
-                                        .animateContentSize(),
-                                    Res.drawable.ic_info_24px,
-                                    "更新内容",
-                                    content,
-                                    onClick = {
-                                        openLink(appUpdateInfo?.url ?: "")
-                                    }
-                                )
-                            }
-                        }
 
                         AppSettings.HomeLayoutType.DownloadList -> {
                             item {
@@ -1072,66 +944,6 @@ private fun HomeScaffold(
     }
 }
 
-@Composable
-private fun CommonInfoCard(
-    modifier: Modifier = Modifier,
-    icon: DrawableResource,
-    title: String = "",
-    connect: String,
-    onClickClose: (() -> Unit)? = null,
-    onClick: () -> Unit = {}
-) {
-    SurfaceColorCard(modifier = modifier) {
-        Surface(Modifier.clickable {
-            onClick.invoke()
-        }, shape = CardDefaults.shape) {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .fillMaxWidth()
-                    .animateContentSize()
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painterResource(icon),
-                        contentDescription = title,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .alpha(0.72f),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        title,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.W400,
-                        maxLines = 1,
-                        modifier = Modifier.alpha(0.72f),
-                    )
-                    Spacer(Modifier.weight(1f))
-                    if (onClickClose != null) {
-                        ASIconButton(onClick = onClickClose, modifier = Modifier.size(30.dp)) {
-                            Icon(
-                                Icons.Outlined.Close,
-                                contentDescription = "关闭"
-                            )
-                        }
-                    }
-                }
-
-                Text(
-                    text = connect,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight(330),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-
-            }
-        }
-    }
-}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)

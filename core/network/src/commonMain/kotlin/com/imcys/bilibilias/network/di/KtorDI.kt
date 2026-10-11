@@ -9,7 +9,6 @@ import com.imcys.bilibilias.network.logging.KtorLogBridge
 import com.imcys.bilibilias.network.plugin.AutoBILIInfoPlugin
 import com.imcys.bilibilias.network.plugin.FirebasePerfPlugin
 import com.imcys.bilibilias.network.plugin.RiskControlPlugin
-import com.imcys.bilibilias.network.plugin.RoamPlugin
 import com.imcys.bilibilias.network.service.AppAPIService
 import com.imcys.bilibilias.network.service.BILIBILITVAPIService
 import com.imcys.bilibilias.network.service.BILIBILIWebAPIService
@@ -64,13 +63,9 @@ val netWorkModule = module {
             install(AutoBILIInfoPlugin){
                 appSetting = get(named("app_settings_datastore"))
             }
-            install(RoamPlugin) {
-                domainReplacement = mapOf(
-                    "api.bilibili.com" to "bili-api.misakamoe.com",
-                )
-                biliUsersDao = get()
-                appSetting = get(named("app_settings_datastore"))
-            }
+            // RoamPlugin 已移除：它会把 api.bilibili.com 的请求改写到第三方主机
+            // （bili-api.misakamoe.com）。本仓库不再依赖任何 imcys.com /
+            // misakamoe.com 的外部服务。
             install(RiskControlPlugin)
             install(ContentNegotiation) {
                 json(get())

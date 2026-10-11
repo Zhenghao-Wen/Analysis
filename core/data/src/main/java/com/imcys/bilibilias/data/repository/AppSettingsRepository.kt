@@ -89,9 +89,20 @@ class AppSettingsRepository(
         }
     }
 
+    /** 已停用第三方依赖的首页布局项，始终从布局列表中剔除。 */
+    private val removedHomeLayoutTypes = setOf(
+        AppSettings.HomeLayoutType.Banner,
+        AppSettings.HomeLayoutType.Announcement,
+        AppSettings.HomeLayoutType.UpdateInfo
+    )
+
     suspend fun asyncHomeLayoutTypesetList(): List<AppSettings.HomeLayoutItem> {
         val defaultList = createDefaultHomeLayoutItems()
-        val existingList = dataStore.data.first().homeLayoutTypesetList.toMutableList()
+        // 同时过滤历史数据：老用户的 DataStore 里可能仍存有 Banner /
+        // Announcement / UpdateInfo，这里主动剔除，保证「始终完全禁用」。
+        val existingList = dataStore.data.first().homeLayoutTypesetList
+            .filterNot { it.type in removedHomeLayoutTypes }
+            .toMutableList()
 
         return if (existingList.isEmpty()) {
             dataStore.updateData { currentSettings ->
@@ -107,10 +118,10 @@ class AppSettingsRepository(
     }
 
     private fun createDefaultHomeLayoutItems(): List<AppSettings.HomeLayoutItem> {
+        // Banner / Announcement / UpdateInfo 已从默认首页布局中移除：
+        // 这三项的数据源是 api.misakamoe.com（轮播图、公告、旧版更新信息），
+        // 本仓库不再依赖任何 imcys.com / misakamoe.com 的第三方网络服务。
         val defaultTypes = listOf(
-            AppSettings.HomeLayoutType.Banner,
-            AppSettings.HomeLayoutType.Announcement,
-            AppSettings.HomeLayoutType.UpdateInfo,
             AppSettings.HomeLayoutType.Tools,
             AppSettings.HomeLayoutType.DownloadList
         )

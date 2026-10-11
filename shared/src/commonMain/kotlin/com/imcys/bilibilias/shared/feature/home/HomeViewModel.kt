@@ -16,9 +16,6 @@ import com.imcys.bilibilias.datastore.source.UsersDataSource
 import com.imcys.bilibilias.shared.download.runtime.SharedDownloadManager
 import com.imcys.bilibilias.network.ApiStatus
 import com.imcys.bilibilias.network.NetWorkResult
-import com.imcys.bilibilias.network.config.API.App.SSE_HOST
-import com.imcys.bilibilias.network.config.API.App.SSE_PATH
-import com.imcys.bilibilias.network.config.API.App.SSE_PORT
 import com.imcys.bilibilias.network.emptyNetWorkResult
 import com.imcys.bilibilias.network.model.app.AppUpdateConfigInfo
 import com.imcys.bilibilias.network.model.app.BannerConfigInfo
@@ -26,20 +23,13 @@ import com.imcys.bilibilias.network.model.app.BulletinConfigInfo
 import com.imcys.bilibilias.network.service.AppAPIService
 import com.imcys.bilibilias.shared.platform.runtime.getAppVersion
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.sse.ClientSSESessionWithDeserialization
-import io.ktor.client.plugins.sse.deserialize
-import io.ktor.client.plugins.sse.sse
-import io.ktor.sse.TypedServerSentEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 
@@ -131,50 +121,12 @@ class HomeViewModel(
     }
 
     fun initOldAppInfo() {
+        // 已停用：首页轮播图 / 旧版更新信息 / 公告原本来自 api.misakamoe.com。
+        // 本仓库不再请求任何 imcys.com / misakamoe.com 的第三方网络服务，
+        // 因此这里不再发起请求，bannerList / appUpdateInfo / bulletinInfo 恒为空。
+        // 对应的 UI（首页轮播图、公告、旧版更新提示）已在 HomeScreen 中一并移除。
         if (_uiState.value.fetchedAppUpdateInfo) return
         _uiState.value = uiState.value.copy(fetchedAppUpdateInfo = true)
-        viewModelScope.launch(Dispatchers.IO) {
-            // 旧版捐助信息
-            val bannerInfo = async {
-                appAPIService.getAppOldBanner().onSuccess {
-                    _bannerList.value = it.textList.mapIndexed { index, string ->
-                        BannerConfigInfo(
-                            title = string,
-                            url = it.imgUrlList.getOrNull(index) ?: "",
-                            ref = it.dataList.getOrNull(index) ?: "",
-                            id = index,
-                            sort = index
-                        )
-                    }
-                }
-            }
-
-            val updateInfo = async {
-                appAPIService.getAppOldUpdateInfo(getAppVersion().second)
-                    .onSuccess {
-                        _appUpdateInfo.value = AppUpdateConfigInfo(
-                            id = 30,
-                            version = it.version,
-                            url = it.url,
-                            feat = it.gxnotice,
-                            fix = it.gxnotice,
-                            remark = "",
-                            forcedUpdate = true,
-                            publishDateTime = "最近"
-                        )
-
-                        _bulletinInfo.value = BulletinConfigInfo(
-                            id = 20,
-                            content = it.notice,
-                            publishDateTime = "最近"
-                        )
-                    }
-            }
-            bannerInfo.start()
-            updateInfo.start()
-
-
-        }
     }
 
     fun getPackageSourceWarningKey(): String {
@@ -189,54 +141,6 @@ class HomeViewModel(
     fun skipPackageSourceWarningForCurrentBuild() {
         viewModelScope.launch(Dispatchers.IO) {
             appSettingsRepository.updatePackageSourceWarningSkipKey(getPackageSourceWarningKey())
-        }
-    }
-
-    private fun requestSSEEvent() {
-        viewModelScope.launch(Dispatchers.IO) {
-            runCatching {
-                httpClient.sse(
-                    host = SSE_HOST,
-                    port = SSE_PORT,
-                    path = SSE_PATH,
-                    deserialize = { typeInfo, jsonString ->
-                        val serializer = Json.serializersModule.serializer(typeInfo.kotlinType!!)
-                        Json.decodeFromString(serializer, jsonString)
-                    }) {
-
-                    while (true) {
-                        incoming.collect { event ->
-                            handleSSEEvent(event)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * 处理服务器相关事件
-     */
-    private fun ClientSSESessionWithDeserialization.handleSSEEvent(event: TypedServerSentEvent<String>) {
-        when (event.event) {
-            "banner" -> {
-                val bannerConfigInfo = deserialize<List<BannerConfigInfo>>(event.data)
-                _bannerList.value = bannerConfigInfo ?: emptyList()
-            }
-
-            "bulletin" -> {
-                val bulletinConfigInfo = deserialize<BulletinConfigInfo>(event.data)
-                _bulletinInfo.value = bulletinConfigInfo
-            }
-
-            "appUpdate" -> {
-                val appUpdateInfo = deserialize<AppUpdateConfigInfo>(event.data)
-                _appUpdateInfo.value = appUpdateInfo
-            }
-
-            else -> {
-                println("Received other event: ${event.event} with data: ${event.data}")
-            }
         }
     }
 

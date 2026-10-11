@@ -74,6 +74,9 @@ fun DonateContent(paddingValues: PaddingValues) {
     var payUrl by remember { mutableStateOf("") }
     val vm = koinViewModel<DonateViewModel>()
     val uiState by vm.uiState.collectAsStateWithLifecycle()
+    // 后端已停用：数据不会再到达，用 loadFailed 结束骨架态，避免永久 shimmer
+    // 以及进度条算出 0/0。
+    val dataUnavailable = uiState.loadFailed || uiState.oldDonateInfo == null
 
     Column(
         modifier = Modifier
@@ -81,11 +84,18 @@ fun DonateContent(paddingValues: PaddingValues) {
             .padding(12.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        if (uiState.loadFailed) {
+            Text(
+                text = "捐助信息暂不可用（相关后端服务已停用）。",
+                fontSize = 14.sp,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+        }
         Row {
             Surface(
                 modifier = Modifier
                     .weight(1f)
-                    .shimmer(uiState.oldDonateInfo?.alipay == null),
+                    .shimmer(uiState.oldDonateInfo?.alipay == null && !uiState.loadFailed),
                 shape = CardDefaults.shape,
                 onClick = {
                     showPayDialog = true
@@ -125,7 +135,7 @@ fun DonateContent(paddingValues: PaddingValues) {
             Surface(
                 modifier = Modifier
                     .weight(1f)
-                    .shimmer(uiState.oldDonateInfo?.weChat == null),
+                    .shimmer(uiState.oldDonateInfo?.weChat == null && !uiState.loadFailed),
                 shape = CardDefaults.shape,
                 onClick = {
                     showPayDialog = true
@@ -152,7 +162,7 @@ fun DonateContent(paddingValues: PaddingValues) {
         Spacer(Modifier.height(16.dp))
         Surface(
             modifier = Modifier.shimmer(
-                uiState.oldDonateInfo == null
+                uiState.oldDonateInfo == null && !uiState.loadFailed
             ).fillMaxWidth(),
             shape = CardDefaults.shape
         ) {
@@ -165,9 +175,14 @@ fun DonateContent(paddingValues: PaddingValues) {
                 LinearProgressIndicator(
                     modifier = Modifier.height(10.dp).fillMaxWidth(),
                     progress = {
-                        ((uiState.oldDonateInfo?.surplus
-                            ?: "0.0").toDouble() / (uiState.oldDonateInfo?.total
-                            ?: "0.0").toDouble()).toFloat()
+                        // 数据不可用时不再计算，避免 0/0 = NaN
+                        if (dataUnavailable) {
+                            0f
+                        } else {
+                            val total = (uiState.oldDonateInfo?.total ?: "0.0").toDoubleOrNull() ?: 0.0
+                            val surplus = (uiState.oldDonateInfo?.surplus ?: "0.0").toDoubleOrNull() ?: 0.0
+                            if (total <= 0.0) 0f else (surplus / total).toFloat()
+                        }
                     },
                 )
             }
