@@ -33,8 +33,11 @@ as.github.repository=Analytics
 这些值会影响 app 的 BuildConfig、依赖启用方式和运行时行为：
 
 - `org.gradle.*` 开关用于启用并行执行、构建缓存和配置缓存；`configuration-cache.problems=warn` 用于兼容部分第三方 Gradle 插件任务。
-- `enabledPlayAppMode=true` 时启用 Google Play app-update/review 相关依赖和逻辑。
-- `enabledAnalytics=true` 时启用 Firebase/百度统计相关能力；未启用时相关依赖多以 `compileOnly` 参与编译。
+- `enabledPlayAppMode`：**请保持 `false`**。Play Core 依赖已从版本目录移除、
+  `GooglePlayAppUpdateManage` 已是空实现，设为 `true` 不会带来真实的商店更新能力，
+  只会打开部分 UI 的 Play 分支（详见 [构建矩阵与开关组合](./build-matrix.md)）。
+- `enabledAnalytics` 目前无实际作用：Firebase / 百度统计已整体移除，埋点为空壳实现
+  （见下文「Firebase / Google Services / 百度统计（均已移除）」）。
 - `as.github.*` 用于应用内版本检查。
 - FFmpeg 运行能力来自 `app` 中的第三方依赖 `libs.ffmpeg.kit.x6kb`。
 
@@ -117,16 +120,27 @@ ABI：
 
 不要把 keystore、密码、个人证书、Play 上传凭据提交到仓库。
 
-## Firebase 与 Google Services
+## Firebase / Google Services / Google Play / 百度统计（均已移除）
 
-仓库当前包含 `app/google-services.json`，并应用了：
+本仓库已剥离全部闭源可选依赖，**不再应用**以下插件，`google-services.json` 也已删除：
 
 - `com.google.gms.google-services`
 - `com.google.firebase.crashlytics`
 - `com.google.firebase.firebase-perf`
+- `bilibilias.baidu.jar`
 
-改动 Firebase、统计或隐私授权相关逻辑时，必须确认未同意隐私政策时不会主动采集或上传不该上传的数据。
+相应地：
 
-## 百度统计 jar
+- 源码中的 Firebase / Google Play / 百度统计调用已由**本仓库内的同名 No-Op 替身**接管
+  （`app/src/main/java/com/google/firebase/`、`app/src/main/java/com/baidu/mobstat/`，
+  以及 `common/update/GooglePlayAppUpdateManage.kt`、
+  `common/utils/firebase/FirebaseNetworkPerformanceTracer.kt`）。
+- 版本目录中 Firebase、`com.google.android.play:*`、百度统计相关条目已清理，
+  构建脚本中已无 `firebaseDependencies()` / `googlePlayDependencies()` /
+  `baiduStatDependencies()` 等函数。
+- `enabledAnalytics` 目前不再有任何实际作用：埋点实现是空壳，不会采集或上传数据。
+  隐私授权逻辑仍然保留（未同意时不触发任何相关调用）。
+- 百度统计 jar 不再由任何插件下载；`app/libs/` 为空。
+- R8 需要 `-dontwarn` 规则来忽略这些已移除依赖的残留引用，见 `app/proguard-rules.pro`。
 
-`app` 使用 `bilibilias.baidu.jar` convention plugin 和 `baiduStatDependencies()`。当 `app/libs/Baidu_Mtj_android_*.jar` 存在且满足开关条件时会作为实现依赖，否则以 `compileOnly` 或不参与方式处理。不要手动复制不明来源 jar 到仓库。
+

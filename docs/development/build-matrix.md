@@ -143,34 +143,32 @@
 
 ## 依赖启停规则
 
-### Google Play 依赖
+**Firebase / 百度统计 / Google Play 的启停规则均已失效。** 这些依赖已从本仓库整体移除：
 
-`googlePlayDependencies(enabled)` 的行为是：
+- `firebaseDependencies()` / `googlePlayDependencies()` / `baiduStatDependencies()`
+  三个函数及对应插件（`gms.google.services`、`firebase.crashlytics`、`firebase.perf`、
+  `bilibilias.baidu.jar`）都已删除；
+- 版本目录中的 Firebase、`com.google.android.play:*` 条目已清理；
+- 不存在 `implementation` ↔ `compileOnly` 的切换了，构建脚本中也没有任何
+  指向它们的引用。
 
-- `enabled=true` 时使用 `implementation`
-- `enabled=false` 时使用 `compileOnly`
+源码中的 Firebase / Google Play / 百度统计调用由**本仓库内的同名 No-Op 替身**接管
+（`app/src/main/java/com/google/firebase/`、`app/src/main/java/com/baidu/mobstat/`，
+以及 `common/update/GooglePlayAppUpdateManage.kt`、
+`common/utils/firebase/FirebaseNetworkPerformanceTracer.kt`）。
 
-因此“代码能编译”不等于“对应能力在该变体里一定可运行”。
+### `enabledPlayAppMode` 的现状（重要）
 
-### Firebase 依赖
+`ENABLED_PLAY_APP_MODE` 这个 BuildConfig 字段仍然生成，但**把
+`enabledPlayAppMode` 设为 `true` 目前会带来编译/运行不一致**：
 
-`firebaseDependencies(enabled)` 的行为是：
+- Play Core 依赖已从版本目录移除，`GooglePlayAppUpdateManage` 已是空实现
+  （所有 `checkApp*Update()` 固定返回 `false`）；
+- 因此 `true` 不会带来任何真实的商店更新能力，只会打开部分 UI 的 Play 分支。
+- 当前默认值与 `alpha` flavor 都是 `false`。
 
-- `enabled=true` 时使用 `implementation`
-- `enabled=false` 时使用 `compileOnly`
-
-同时运行时还要满足：
-
-- `BuildConfig.ENABLED_ANALYTICS=true`
-- 用户已同意隐私政策
-
-### 百度统计
-
-百度统计除构建开关外，还要求：
-
-- `app/libs/Baidu_Mtj_android_*.jar` 实际存在
-- 非 Play 模式
-- 用户已同意隐私政策
+结论：**把 `enabledPlayAppMode` 保持为 `false`**。若将来要恢复 Play 通道，
+需要先重新引入 `com.google.android.play:app-update-ktx` 等依赖并还原该实现类。
 
 ## 签名与本地限制
 
