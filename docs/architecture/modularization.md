@@ -22,16 +22,16 @@ BILIBILIAS 使用 Gradle 多 module。根 `settings.gradle.kts` 当前包含：
 
 | Module | 职责 |
 | --- | --- |
-| `:app` | Android application、Activity/Application、页面实现、下载管理、渠道 flavor、Firebase/百度/Google Play/Shizuku/App Functions 接入 |
+| `:app` | Android application、Activity/Application、页面实现、下载管理、渠道 flavor、Shizuku/App Functions 接入；Firebase/百度统计/Google Play 相关调用已改由同名 No-Op 替身接管 |
 | `:core:ui` | Compose 主题、公共 UI 组件、UI 工具 |
 | `:core:common` | 通用事件、BuildConfig 运行时桥接、工具类、基础异常、跨 module 公共类型 |
 | `:core:network` | Ktor client、API service、网络 model、网络插件、B 站签名/token 工具 |
 | `:core:database` | Room 3 database、DAO、entity、converter、schema |
-| `:core:datastore` | App/User/Google Play 设置 DataStore source、Okio serializer 与 Koin 注入 |
+| `:core:datastore` | App/User 设置 DataStore source、Okio serializer 与 Koin 注入（`google_play.proto` 为历史遗留，代码中已无消费方） |
 | `:core:datastore-proto` | Wire protobuf schema、生成代码与兼容扩展 |
 | `:core:data` | repository、UI 可消费的 data model、数据源编排 |
 | `:shared` | Kotlin Multiplatform 共享层，承载跨 Android/iOS 的 app 壳层、Navigation 3 页面、平台桥接、下载运行时抽象和业务 UI |
-| `build-logic` | Gradle convention plugins、Kotlin/Android 公共构建配置、点击埋点字节码插桩、百度 jar 下载 |
+| `build-logic` | Gradle convention plugins、Kotlin/Android 公共构建配置、点击埋点字节码插桩（百度 jar 下载插件已随闭源依赖剥离删除） |
 
 ## `:shared` 包结构
 
@@ -55,7 +55,7 @@ BILIBILIAS 使用 Gradle 多 module。根 `settings.gradle.kts` 当前包含：
 
 - `clipboard`：剪贴板桥接。
 - `device`：设备信息。
-- `firebase`：Firebase 相关平台入口。
+- `firebase`：Firebase 相关平台入口的**空实现**（闭源依赖移除后，实际为 No-Op）。
 - `permission`：权限请求和授权状态。
 - `runtime`：运行时平台信息、Android Koin application 入口、下载运行时平台能力。
 - `storage`：文件系统、文件打开、存储平台能力。
@@ -117,9 +117,10 @@ BILIBILIAS 使用 Gradle 多 module。根 `settings.gradle.kts` 当前包含：
 
 - `bilibilias.android.application`：应用 module 公共配置，应用 Compose 插件，设置 targetSdk，并添加测试依赖。
 - `bilibilias.android.library`：Android library 公共配置，设置 compileSdk/minSdk/JVM、test runner 和资源前缀。
-- `bilibilias.jvm.library`：JVM module 公共配置。
+- `bilibilias.jvm.library`：JVM module 公共配置（已无使用方，插件注册已移除）。
 - `bilibilias.android.koin`：统一添加 Koin 依赖，Compose module 会附加 koin-compose。
-- `bilibilias.baidu.jar`：处理百度统计 jar。
+- ~~`bilibilias.baidu.jar`~~：**已删除**。原用于下载并接入百度统计 jar，
+  随闭源依赖剥离一并移除。
 
 Android/Kotlin 公共配置在 `com/imcys/bilibilias/buildlogic/KotlinAndroid.kt`：
 

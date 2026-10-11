@@ -11,7 +11,8 @@
 - `adapter`
   - 面向“返回体不符合 B 站标准 `BiliApiResponse` 结构”的接口，把第三方响应适配进统一请求结果模型。
 - `plugin`
-  - 面向跨请求能力的 Ktor 插件，例如 Referer/UA 修正、漫游域名替换、风险事件监听、Firebase 性能上报。
+  - 面向跨请求能力的 Ktor 插件。当前实际安装的是 Referer/UA 修正（`AutoBILIInfoPlugin`）
+    与风险事件监听（`RiskControlPlugin`）；**漫游域名替换与 Firebase 性能上报插件已移除**。
 - `repository`
   - 面向 UI 或业务流程，把网络结果和数据库、DataStore、登录状态、平台选择组合起来。
 
@@ -70,9 +71,12 @@
 - 安装 `SSE`
 - 安装业务插件：
   - `AutoBILIInfoPlugin`
-  - `RoamPlugin`
   - `RiskControlPlugin`
-  - `FirebasePerfPlugin`
+  - ~~`RoamPlugin`~~：**已移除**。它会把 `api.bilibili.com` 的请求改写到第三方主机
+    （`bili-api.misakamoe.com`），存在安全与隐私问题；本仓库不再依赖任何
+    imcys.com / misakamoe.com 的外部服务。
+  - ~~`FirebasePerfPlugin`~~：**已移除**。Firebase 依赖已整体剥离，
+    性能埋点由 `FirebaseNetworkPerformanceTracer` 空实现接管。
 - 安装：
   - `ContentNegotiation(json + protobuf)`
   - `HttpRequestRetry`
@@ -84,14 +88,13 @@
 - Web API
 - TV API
 - 需要走 Cookie、签名、风控、漫游、性能埋点的业务请求
-
 ### 2. `DownloadHttpClient`
 
 Koin qualifier：`named("DownloadHttpClient")`
 
 这是专门给下载链路准备的“纯净”客户端，特点：
 
-- 不安装风控、漫游、Firebase 等业务插件。
+- 不安装风控、漫游、Firebase 等业务插件（漫游与 Firebase 插件已整体移除）。
 - 超时时间更长：`60s`
 - 仍保留 Cookie 与基础请求重试。
 - 安装 `AutoBILIInfoPlugin`，确保 UA/Referer 行为与当前解析平台一致。
@@ -173,15 +176,16 @@ Koin qualifier：`named("CommonApiHttpClient")`
 - 新增播放器相关接口时，如果也可能返回同类风控标记，要考虑是否加入白名单。
 - 这类跨层事件不要散落在页面里用字符串判断，优先集中在插件或统一扩展里。
 
-### `FirebasePerfPlugin`
+### `FirebasePerfPlugin`（已移除）
 
-职责：
-
-- 为请求接入 Firebase 网络性能追踪。
+**该插件已不再安装。** Firebase 依赖已随闭源依赖剥离整体移除，网络性能埋点改由
+`FirebaseNetworkPerformanceTracer` 空实现接管（`NetworkPerformanceTracer` 接口仍在，
+见 `core:network`）。
 
 注意：
 
-- 统计与性能采集仍受用户授权和构建配置约束，不能绕过隐私开关。
+- 统计与性能采集原本受用户授权和构建配置约束；现在实现为空壳，不会采集任何数据，
+  但调用方的隐私开关逻辑仍然保留。
 
 ## Cookie 存储与登录状态
 

@@ -51,7 +51,8 @@ Product flavor：
 
 - `official`：正式渠道，`app_channel=Official`。
 - `alpha`：带 applicationId/versionName suffix，本地默认使用 debug signing，CI 可读取 `RUNNER_TEMP` 下的 `mxjs-debug.jks`。
-- `beta`：Google Play 提交用途，`app_channel=Beta`。
+- `beta`：**历史遗留，不再使用**。原为 Google Play 提交用途，`app_channel=Beta`。
+  本项目已停止 Google Play 分发。
 
 日常开发、测试打包和本地验证优先使用 `alpha`。`official` 是最终正式发行渠道，不作为默认测试变体。
 

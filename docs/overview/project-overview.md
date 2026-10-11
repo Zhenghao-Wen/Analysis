@@ -11,7 +11,7 @@ BILIBILIAS 是一款第三方 B 站视频缓存工具，面向离线播放、学
 - 入口：分享文本到 App、内置网页解析、投稿/收藏夹/历史/点赞/追番列表解析。
 - 下载：内置下载器、字幕下载、命名规则、媒体合并和下载任务管理。
 - 工具：视频逐帧导出、番剧日历、导出、平台解析设置、存储管理等。
-- 扩展：Google Play 更新/评价、Firebase、百度统计、Shizuku、Android App Functions、B 站漫游相关能力。
+- 扩展：Shizuku、Android App Functions、B 站漫游相关能力。
 
 ## 合规边界
 
@@ -30,14 +30,18 @@ BILIBILIAS 是一款第三方 B 站视频缓存工具，面向离线播放、学
 - Ktor + kotlinx.serialization 作为网络层基础。
 - Room 3、DataStore、Wire protobuf 作为本地数据基础。
 - Gradle Kotlin DSL、version catalog、includeBuild `build-logic` 约定插件。
-- Firebase、百度统计、Google Play 相关库通过构建开关和 flavor 组合启用或降级为 `compileOnly`。
+- Firebase、百度统计、Google Play 相关库**已整体移除**（闭源依赖剥离，详见
+  [闭源可选依赖剔除策略](./closed-source-dependencies.md)）。源码中的相关调用由
+  仓库内的同名 No-Op 替身接管，构建脚本与版本目录中已无对应插件与依赖。
+- **Google Play 分发渠道为历史遗留，不再使用。** `beta` flavor、`enabledPlayAppMode`
+  开关与其 BuildConfig 字段仅作为遗留保留，不会带来真实的商店能力。
 
 ## 包名与版本
 
 - applicationId：`com.imcys.bilibilias`
 - namespace：`com.imcys.bilibilias`
-- 当前 `versionName`：`3.1.6`
-- 当前 `versionCode`：`316`
+- 当前 `versionName`：`320`
+- 当前 `versionCode`：`320`
 - compileSdk：`37`
 - targetSdk：`36`
 - minSdk：`24`

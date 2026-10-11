@@ -7,7 +7,7 @@ BILIBILIAS 当前是一个以 `:app` 为 Android 入口、`:shared` 承载跨端
 `BILIBILIASApplication` 负责进程级初始化：
 
 - 写入 `CommonBuildConfig` 中的构建期配置。
-- 在应用进程早期做基础初始化，例如百度统计初始化入口、Koin、内存调度和 FFmpeg 运行时配置。
+- 在应用进程早期做基础初始化，例如统计初始化入口（现为 No-Op 空实现）、Koin、内存调度和 FFmpeg 运行时配置。
 - 启动 Koin，并注册 `dataStoreModule`、`netWorkModule`、`repositoryModule`、`databaseModule`、`appModule`。
 - 初始化 `FairMemoryReceiver`，在内存压力时回收下载相关资源。
 - 从 `AppSettingsRepository` 读取下载并发和合并配置，写入 `FfmpegRuntimeConfig`。
@@ -18,8 +18,8 @@ BILIBILIAS 当前是一个以 `:app` 为 Android 入口、`:shared` 承载跨端
 - 调用 `enableEdgeToEdge()`。
 - 挂载 `BILIBILIASTheme` 和 `BILIBILIASAppScreen()`。
 - 处理分享文本和 `bilibilias://` deep link，并转成解析页或登录完成页导航事件。
-- 基于 `AppSettings.agreePrivacyPolicy` 控制百度统计、Firebase 等能力的实际启用。
-- 初始化设置监听、通知渠道和更新检查。
+- 基于 `AppSettings.agreePrivacyPolicy` 控制统计与 Firebase 能力的实际启用（两者现均为 No-Op 空实现，不会采集数据；授权门禁逻辑仍保留）。
+- 初始化设置监听、通知渠道。更新检查目前没有可用数据源（原 imcys 后端已停用）。
 
 ## UI 与状态
 

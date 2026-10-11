@@ -81,5 +81,5 @@ Lint：
 
 - 小改动至少跑相关 module 的编译或测试。
 - 下载、数据库、网络、隐私和 release 构建相关改动要扩大验证范围。
-- 涉及 `gradle.properties`、flavor、Firebase、百度统计、Google Play 依赖切换时，至少对照一次 [构建矩阵与开关组合](../development/build-matrix.md)，避免只在单一变体验证。
+- 涉及 `gradle.properties`、flavor 或渠道开关时，至少对照一次 [构建矩阵与开关组合](../development/build-matrix.md)，避免只在单一变体验证。注意：Firebase / 百度统计 / Google Play 依赖已整体移除，不存在依赖启停切换；Google Play 渠道为历史遗留，不再使用。
 - 若某项验证因本地 SDK、签名或网络不可用无法执行，应在提交说明或回复中写明原因。

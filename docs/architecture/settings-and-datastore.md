@@ -11,7 +11,9 @@
 - `User`
   - 面向当前登录用户标识和少量账号相关网络开关。
 - `GooglePlaySettings`
-  - 面向 Google Play 渠道流程统计等轻量状态。
+  - **历史遗留**：原用于 Google Play 渠道流程统计。Google Play 渠道已不再使用，
+    且相关实现（Firebase / Play Core）已随闭源依赖剥离移除，代码中已无消费方；
+    该 proto 仅保留字段编号以免破坏历史数据兼容，不应再新增用途。
 
 proto 定义位于：
 
@@ -66,7 +68,9 @@ proto 定义位于：
 
 - `agree_privacy_policy`
   - 控制用户是否已同意隐私政策。
-  - 实际会影响 `MainActivity` 中百度统计、Firebase 等能力是否真正启用。
+  - 仍会驱动 `MainActivity` / `SettingViewModel` 中的统计与 Firebase 授权门禁调用
+    （`FirebaseExt.setDataCollectionEnabled` 等）。但相关实现已随闭源依赖剥离变为
+    空实现，**未同意时不会采集，同意后也不会采集任何数据**；门禁逻辑保留以备将来接入。
 - `know_about_app`
   - 控制首次介绍、认知引导等状态。
 
@@ -136,14 +140,16 @@ proto 定义位于：
 
 它会影响 `AsCookiesStorage` 的行为，因此虽然字段少，仍属于网络链路关键状态。
 
-### `GooglePlaySettings`
+### `GooglePlaySettings`（历史遗留，不再使用）
 
-当前只承载：
+仅保留一个字段：
 
 - `usage_process_number`
-  - 整个 App 流程使用次数统计。
+  - 原用于 App 流程使用次数统计，随 Google Play 渠道与统计实现一起被移除。
 
-这类字段不要混进 `AppSettings`，否则会把渠道特定状态和全局设置耦合到一起。
+**当前状态：代码中没有任何消费方**（`GooglePlaySettings` 在 Kotlin 侧无引用）。
+保留该 proto 与字段编号是为了不破坏历史数据的解析兼容性，**不应再新增字段或用途**。
+Google Play 分发渠道已明确不再使用。
 
 ## 默认值与兼容修正
 
@@ -191,5 +197,6 @@ proto 定义位于：
 对应建议：
 
 - 账号状态优先考虑 `User` 或数据库用户表
-- 渠道状态优先考虑 `GooglePlaySettings`
+- 渠道状态原先是 `GooglePlaySettings` 的用途，但 Google Play 渠道已不再使用，
+  新增渠道状态请不要放进该 proto，应另建用途明确的定义
 - 复杂持久化结构优先考虑 Room

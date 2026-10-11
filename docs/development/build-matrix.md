@@ -2,6 +2,11 @@
 
 本文档说明 BILIBILIAS 当前 flavor、build type 与 `gradle.properties` 开关的实际组合规则。目标是避免只看单个配置文件就误判最终产物行为。
 
+> **Google Play 渠道：历史遗留，不再使用。**
+> 本项目已停止通过 Google Play 分发，且 Firebase / Google Play Core / 百度统计等闭源依赖
+> 已从仓库整体移除。`beta` flavor 与 `enabledPlayAppMode` 开关仅作为历史遗留保留，
+> **不会也不可能再用于发布**。详见下文「依赖启停规则」。
+
 ## 总览
 
 当前构建结果主要由三层共同决定：
@@ -10,35 +15,32 @@
 2. `app/build.gradle.kts` 中的 `productFlavors`
 3. `app/build.gradle.kts` 中的 `buildTypes`
 
-其中 `enabledPlayAppMode`、`enabledAnalytics` 虽然来自 `gradle.properties`，但并不是对所有 flavor 都直接生效。
+其中 `enabledAnalytics` 已不再有任何实际作用（相关依赖与实现均已移除），
+`enabledPlayAppMode` 属于历史遗留开关，两者都只影响少量遗留代码分支。
 
 ## Flavor 定位
 
 ### `alpha`
 
-- 日常开发、快速验证、测试打包首选
+- **日常开发、测试打包、快速验证的首选，也是当前的唯一实际使用渠道**
 - 带 `applicationIdSuffix` 和 `versionNameSuffix`
 - 本地默认使用 debug signing
 - 在 CI 中可读取 `RUNNER_TEMP/mxjs-debug.jks`
 - `ENABLED_PLAY_APP_MODE` 被 flavor 固定写成 `false`
 
-结论：
+### `beta`（历史遗留，不再使用）
 
-即使 `gradle.properties` 把 `enabledPlayAppMode` 改成 `true`，`alpha` 仍不会进入 Play 模式。
-
-### `beta`
-
-- Google Play 提交用途
+- 原用途：Google Play 提交
 - 带 `applicationIdSuffix` 和 `versionNameSuffix`
 - 使用 `BILIBILIASSigningConfig`
 - `ENABLED_PLAY_APP_MODE` 读取 `gradle.properties` 中的 `enabledPlayAppMode`
+- **本项目已停止 Google Play 分发，该 flavor 不再用于任何发布流程**
 
-### `official`
+### `official`（历史遗留）
 
-- 最终正式发行渠道
-- 使用正式 `applicationId`
+- 原用途：最终正式发行渠道，使用正式 `applicationId`
 - 使用 `BILIBILIASSigningConfig`
-- `ENABLED_PLAY_APP_MODE` 读取 `gradle.properties` 中的 `enabledPlayAppMode`
+- **项目已停止公开发布 APK**，该 flavor 保留仅供自行编译使用
 
 ## Build Type 行为
 
@@ -60,35 +62,42 @@
 
 ## 开关影响范围
 
-### `enabledPlayAppMode`
+### `enabledPlayAppMode`（历史遗留）
 
-影响：
+**结论：保持 `false`，并视为永久 `false`。**
 
-- Google Play 更新/评价相关依赖是 `implementation` 还是 `compileOnly`
-- `BuildConfig.ENABLED_PLAY_APP_MODE`
-- 运行时是否走 Google Play 相关逻辑
-- 百度统计逻辑是否可用
+当前实际影响已非常有限：
 
-额外注意：
+- `BuildConfig.ENABLED_PLAY_APP_MODE` 的取值（`alpha` 下恒为 `false`）
+- 少量 UI 是否进入「Play 渠道」分支（例如设置页仓库/反馈入口的显隐判断）
 
-- `alpha` flavor 会强制关闭 Play 模式
-- `official` / `beta` 才会真实读取该属性
+已经**不再**影响：
+
+- Google Play 更新/评价依赖：`com.google.android.play:*` 条目已从版本目录移除，
+  不存在 `implementation` ↔ `compileOnly` 的切换
+- 应用内更新能力：`GooglePlayAppUpdateManage` 已是空实现，
+  所有 `checkApp*Update()` 固定返回 `false`，设为 `true` 也不会产生真实商店更新
+- 百度统计可用性：百度统计已整体移除
+
+因此把它设为 `true` 不会带来任何真实能力，只会打开少量无实际作用的历史分支。
 
 ### `enabledAnalytics`
 
-影响：
+**已无实际作用**，仅保留 `BuildConfig.ENABLED_ANALYTICS` 字段的生成
+（部分遗留代码仍会读取它）。Firebase 与百度统计均已移除：
 
-- Firebase Crashlytics / Analytics / Config / Messaging / Perf / In-App Messaging 是 `implementation` 还是 `compileOnly`
-- `BuildConfig.ENABLED_ANALYTICS`
-- 百度统计 jar 是否作为真实实现依赖参与
+- 不存在「Crashlytics / Analytics / Config / Messaging / Perf / In-App Messaging
+  是 `implementation` 还是 `compileOnly`」的切换——版本目录条目已删除
+- 不存在百度统计 jar 的引入逻辑
+- 埋点实现是同名 No-Op 替身，不会采集或上传任何数据
 
-但运行时是否真的采集，还要再受用户隐私同意控制，不能只看依赖是否被打进包内。
+隐私授权逻辑仍然保留：未同意隐私政策时不会触发任何相关调用。
 
 ### `as.github.org` / `as.github.repository`
 
 影响：
 
-- 应用内版本检查所访问的 GitHub 仓库信息
+- 应用内版本检查所访问的 GitHub 仓库信息，当前为 `Zhenghao-Wen` / `Analytics`
 
 ### `as.baidu.stat.id`
 
@@ -97,11 +106,11 @@
 - Manifest placeholder
 - `BuildConfig.BAIDU_STAT_ID`
 
+注意：百度统计已移除，该值当前不再被任何实现使用，仅保留字段以免影响历史构建配置。
+
 ## 常见组合
 
-### 日常开发
-
-推荐：
+### 日常开发（推荐）
 
 ```bash
 ./gradlew :app:assembleAlphaDebug
@@ -112,9 +121,7 @@
 - Play 模式固定关闭
 - 适合大多数页面、下载、解析、导航和设置变更
 
-### 本地验证 release 行为
-
-推荐：
+### 本地验证 release 行为（推荐）
 
 ```bash
 ./gradlew :app:assembleAlphaRelease
@@ -124,22 +131,17 @@
 
 - 仍是 `alpha` 渠道
 - 可以提前验证 R8、资源裁剪、ABI split
+- 这是当前产出发行包的实际用法
 
-### 发布前核验
-
-推荐：
-
-```bash
-./gradlew :app:assembleOfficialRelease
-```
-
-或根据用途：
+### 历史遗留渠道（不建议）
 
 ```bash
 ./gradlew :app:assembleBetaRelease
+./gradlew :app:assembleOfficialRelease
 ```
 
-这类构建通常还会受签名与本地/CI 凭据影响。
+这两个任务对应已停止使用的分发渠道。它们仍会受签名与本地/CI 凭据影响；
+**项目已停止公开分发，请勿据此假定存在可用的发布流程**。
 
 ## 依赖启停规则
 
@@ -157,22 +159,11 @@
 以及 `common/update/GooglePlayAppUpdateManage.kt`、
 `common/utils/firebase/FirebaseNetworkPerformanceTracer.kt`）。
 
-### `enabledPlayAppMode` 的现状（重要）
-
-`ENABLED_PLAY_APP_MODE` 这个 BuildConfig 字段仍然生成，但**把
-`enabledPlayAppMode` 设为 `true` 目前会带来编译/运行不一致**：
-
-- Play Core 依赖已从版本目录移除，`GooglePlayAppUpdateManage` 已是空实现
-  （所有 `checkApp*Update()` 固定返回 `false`）；
-- 因此 `true` 不会带来任何真实的商店更新能力，只会打开部分 UI 的 Play 分支。
-- 当前默认值与 `alpha` flavor 都是 `false`。
-
-结论：**把 `enabledPlayAppMode` 保持为 `false`**。若将来要恢复 Play 通道，
-需要先重新引入 `com.google.android.play:app-update-ktx` 等依赖并还原该实现类。
+R8 需要 `-dontwarn` 规则来忽略已移除依赖的残留引用，见 `app/proguard-rules.pro`。
 
 ## 签名与本地限制
 
-- `official` / `beta` 使用 `BILIBILIASSigningConfig`
+- `official` / `beta` 使用 `BILIBILIASSigningConfig`（均为历史遗留渠道）
 - 仓库未内置 keystore 与密码
 - `alpha` 本地默认回落到 debug signing
 - `alpha` CI 可通过 `RUNNER_TEMP` 提供单独签名文件

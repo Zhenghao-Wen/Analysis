@@ -43,6 +43,9 @@
 
 `alpha`、`beta`、`official` 的行为差异，以及 `enabledPlayAppMode` / `enabledAnalytics` 对不同变体的实际影响，见 [构建矩阵与开关组合](./development/build-matrix.md)。
 
+> 现状提示：Google Play 渠道为**历史遗留，不再使用**；Firebase / 百度统计 /
+> Google Play 依赖已整体移除，`enabledAnalytics` 与 `enabledPlayAppMode` 已无实际作用。
+
 ## 维护原则
 
 - 本项目已经停止公开发布 APK，源码仍可用于学习和自行编译。
