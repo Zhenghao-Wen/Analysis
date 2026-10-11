@@ -267,7 +267,7 @@ fun FeedbackDialog(showFeedbackDialog: Boolean, onDismiss: () -> Unit) {
                     Surface(
                         shape = CardDefaults.shape,
                         onClick = { 
-                            openLink("https://github.com/1250422131/bilibilias/issues")
+                            openLink("https://github.com/Zhenghao-Wen/Analytics/issues")
                         }
                     ) {
                         Row(

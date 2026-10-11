@@ -26,8 +26,8 @@ org.gradle.configuration-cache.problems=warn
 enabledPlayAppMode=false
 enabledAnalytics=true
 as.baidu.stat.id=0f9d51ff82
-as.github.org=1250422131
-as.github.repository=bilibilias
+as.github.org=Zhenghao-Wen
+as.github.repository=Analytics
 ```
 
 这些值会影响 app 的 BuildConfig、依赖启用方式和运行时行为：

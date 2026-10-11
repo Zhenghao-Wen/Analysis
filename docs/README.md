@@ -38,8 +38,8 @@
 
 - `enabledPlayAppMode=false`
 - `enabledAnalytics=true`
-- `as.github.org=1250422131`
-- `as.github.repository=bilibilias`
+- `as.github.org=Zhenghao-Wen`
+- `as.github.repository=Analytics`
 
 `alpha`、`beta`、`official` 的行为差异，以及 `enabledPlayAppMode` / `enabledAnalytics` 对不同变体的实际影响，见 [构建矩阵与开关组合](./development/build-matrix.md)。
 
