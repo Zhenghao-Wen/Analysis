@@ -66,6 +66,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * 新的下载管理器 - 使用重构后的组件
@@ -441,20 +442,22 @@ class NewDownloadManager(
         val videoTask = task.downloadSubTasks.first()
         val audioTask = task.downloadSubTasks.last()
 
-        var videoProgress = 0f
-        var audioProgress = 0f
+        // video/audio 两个 async 会并发回调；用原子引用避免对同一变量无同步读写
+        // （此前是两个普通局部 var，双写存在数据竞争，进度可能跳变或失真）。
+        val videoProgress = AtomicReference(0f)
+        val audioProgress = AtomicReference(0f)
 
         val videoResult = async {
             downloadSubTask(videoTask, task, task.downloadSegment.namingConventionInfo) {
-                videoProgress = it
-                progressCallback((videoProgress + audioProgress) / 2f)
+                videoProgress.set(it)
+                progressCallback((videoProgress.get() + audioProgress.get()) / 2f)
             }
         }
 
         val audioResult = async {
             downloadSubTask(audioTask, task, task.downloadSegment.namingConventionInfo) {
-                audioProgress = it
-                progressCallback((videoProgress + audioProgress) / 2f)
+                audioProgress.set(it)
+                progressCallback((videoProgress.get() + audioProgress.get()) / 2f)
             }
         }
 

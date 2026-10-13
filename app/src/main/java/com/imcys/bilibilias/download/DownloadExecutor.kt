@@ -11,6 +11,7 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.contentLength
 import io.ktor.utils.io.exhausted
 import io.ktor.utils.io.readAvailable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -65,6 +66,8 @@ class DownloadExecutor(
                     tempFile.renameTo(file)
                     return@withContext true
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 if (attempt < MAX_RETRY_ATTEMPTS - 1) {
                     delay(RETRY_DELAY_MS)
@@ -83,6 +86,8 @@ class DownloadExecutor(
                 header("Referer", referer)
             }
             headResp.headers["Content-Length"]?.toLongOrNull() ?: -1L
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             -1L
         }
@@ -117,7 +122,16 @@ class DownloadExecutor(
                 val buffer = ByteArray(DOWNLOAD_BUFFER_SIZE.toInt())
                 var downloadedBytes = downloaded
 
-                FileOutputStream(tempFile, downloaded > 0).use { output ->
+                // 只有服务端确实按 Range 续传（206）时才追加写入。
+                // 若服务端忽略 Range 返回 200 全量体，继续以 append 模式写入会把
+                // 全量数据追加到已下载内容之后，导致文件损坏。此时改为从头覆写。
+                val serverHonoredRange = downloaded > 0 && response.status.value == 206
+                val append = downloaded > 0 && serverHonoredRange
+                if (downloaded > 0 && !serverHonoredRange) {
+                    downloadedBytes = 0L
+                }
+
+                FileOutputStream(tempFile, append).use { output ->
                     while (!channel.exhausted()) {
                         val bytesRead = channel.readAvailable(buffer)
                         if (bytesRead == -1) break
@@ -142,6 +156,8 @@ class DownloadExecutor(
                 onProgress(1f)
                 true
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             false
         }
