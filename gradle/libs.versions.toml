@@ -30,6 +30,11 @@ appfunctions = "1.0.0-alpha07"
 room3 = "3.0.0-alpha05"
 sqlite = "2.6.2"
 ksoup = "0.2.6"
+# 本地二维码生成（替代原先依赖 pan.misakamoe.com 的云端出图服务）
+# 锁在 1.1.1：该版本自带纯 Kotlin 编码器（无额外依赖），
+# 且要求 compose.ui 1.10.0 / kotlin-stdlib 2.3.0，与本仓库的 1.11.0 / 2.3.0 兼容；
+# 1.2.0 及以上会强制把 compose.ui 提升到 1.12.x，与当前 material3 1.11.0-alpha07 不一致。
+qrose = "1.1.1"
 serializationJson = "1.11.0"
 kotlinxDatetime = "0.8.0"
 kotlinxIo = "0.9.0"
@@ -73,6 +78,7 @@ kmp-nativecoroutines-annotations = { group = "com.rickclephas.kmp", name = "kmp-
 androidx-datastore-core = { group = "androidx.datastore", name = "datastore-core", version.ref = "androidxDatastore" }
 androidx-datastore-core-okio = { group = "androidx.datastore", name = "datastore-core-okio", version.ref = "androidxDatastore" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
+qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }

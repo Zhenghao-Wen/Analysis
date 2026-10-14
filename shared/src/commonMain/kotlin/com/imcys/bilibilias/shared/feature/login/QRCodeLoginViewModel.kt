@@ -39,8 +39,17 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.readBytes
 import io.ktor.client.statement.readRawBytes
-import io.ktor.http.encodeURLParameter
 import kotlinx.coroutines.IO
+
+
+/**
+ * 扫码登录二维码承载的回跳 deep link。
+ *
+ * 二维码内容 = B 站扫码登录地址 + 本后缀，扫码后由 B 站页面回跳本 App
+ * 完成登录（对应 AndroidManifest 中 `bilibilias://app/loginFinish`）。
+ * 屏幕显示与「保存二维码到相册」必须使用完全相同的字符串，否则扫出来无法回跳。
+ */
+const val QR_CODE_LOGIN_FINISH_DEEP_LINK = "bilibilias://app/loginFinish"
 
 
 class QRCodeLoginViewModel(
@@ -189,7 +198,8 @@ class QRCodeLoginViewModel(
     }
 
     fun saveQRCodeImageToGallery() {
-        saveQRCodeImageToGalleryByPlatform(getQRCodeImageUrl())
+        // 传入的是「待编码内容」而非图片地址：二维码由本地生成，不再请求云端出图服务
+        saveQRCodeImageToGalleryByPlatform(getQRCodeContentForScan())
     }
 
     fun goToScanQR() {
@@ -201,9 +211,15 @@ class QRCodeLoginViewModel(
         checkScanQRJob = null
     }
 
-    fun getQRCodeImageUrl(): String? {
+    /**
+     * 二维码实际承载的内容：B 站的扫码登录地址 + 回跳本 App 的 deep link。
+     *
+     * 原本该内容需要交给 pan.misakamoe.com 生成图片；现在改为本地编码，
+     * 因此这里直接返回原始字符串，屏幕显示与保存到相册共用同一份内容。
+     */
+    fun getQRCodeContentForScan(): String? {
         val url = _qrCodeInfoState.value.data?.url ?: return null
-        return "https://pan.misakamoe.com/qrcode/?url=${url.encodeURLParameter()}"
+        return url + QR_CODE_LOGIN_FINISH_DEEP_LINK
     }
 
     private var checkScanQRJob: Job? = null

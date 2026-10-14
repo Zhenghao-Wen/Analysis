@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -61,9 +62,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import androidx.window.core.layout.WindowWidthSizeClass
 import bilibilias.shared.generated.resources.Res
 import bilibilias.shared.generated.resources.cd_back
@@ -88,10 +91,8 @@ import com.imcys.bilibilias.network.ApiStatus
 import com.imcys.bilibilias.network.NetWorkResult
 import com.imcys.bilibilias.network.model.QRCodeInfo
 import com.imcys.bilibilias.shared.platform.firebase.FirebaseExt
-import com.imcys.bilibilias.shared.platform.runtime.urlEncode
 import com.imcys.bilibilias.shared.feature.login.navigation.QRCodeLoginRoute
 import com.imcys.bilibilias.ui.utils.rememberWidthSizeClass
-import com.imcys.bilibilias.ui.component.ASAsyncImage
 import com.imcys.bilibilias.ui.component.ASIconButton
 import com.imcys.bilibilias.ui.component.ASTopAppBar
 import com.imcys.bilibilias.ui.component.BILIBILIASTopAppBarStyle
@@ -653,15 +654,33 @@ private fun QRCodeContent(
                                 }
 
                                 ApiStatus.SUCCESS -> {
-                                    ASAsyncImage(
-                                        "https://pan.misakamoe.com/qrcode/?url=" + urlEncode(
-                                            qrCodeInfoState.data?.url + "bilibilias://app/loginFinish",),
-                                        contentDescription = stringResource(Res.string.cd_login_qrcode),
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clickable {
-                                                updateQrCode()
-                                            })
+                                    val qrContent = qrCodeInfoState.data?.url
+                                        ?.let { it + QR_CODE_LOGIN_FINISH_DEEP_LINK }
+                                    if (qrContent == null) {
+                                        ASIconButton(onClick = { updateQrCode() }) {
+                                            Icon(
+                                                Icons.Outlined.Replay,
+                                                contentDescription = stringResource(Res.string.common_retry)
+                                            )
+                                        }
+                                    } else {
+                                        // 本地生成二维码：此前是把内容交给
+                                        // pan.misakamoe.com 出图，现改为纯本地编码，
+                                        // 不再把登录地址（含 qrcode_key）发给第三方。
+                                        val qrPainter = rememberQrCodePainter(
+                                            data = qrContent,
+                                            options = defaultQrOptions(),
+                                        )
+                                        Image(
+                                            painter = qrPainter,
+                                            contentDescription = stringResource(Res.string.cd_login_qrcode),
+                                            contentScale = ContentScale.FillWidth,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clickable {
+                                                    updateQrCode()
+                                                })
+                                    }
                                 }
                             }
                         } else {

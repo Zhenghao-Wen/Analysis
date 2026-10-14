@@ -64,6 +64,8 @@ kotlin {
                 implementation(libs.koin.compose.kmp)
                 implementation(libs.koin.compose.viewmodel)
                 implementation(libs.confettikit)
+                // 二维码本地生成（替代 pan.misakamoe.com 云端出图）
+                implementation(libs.qrose)
                 api(project(":core:data"))
                 api(project(":core:common"))
                 api(project(":core:ui"))
