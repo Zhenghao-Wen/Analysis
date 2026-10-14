@@ -97,7 +97,7 @@
 
 影响：
 
-- 应用内版本检查所访问的 GitHub 仓库信息，当前为 `Zhenghao-Wen` / `Analytics`
+- 应用内版本检查所访问的 GitHub 仓库信息，当前为 `Zhenghao-Wen` / `Analysis`
 
 ### `as.baidu.stat.id`
 

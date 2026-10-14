@@ -292,7 +292,7 @@ fun SettingScreen(
                         }
                     },
                     onClick = {
-                        openLink("https://github.com/Zhenghao-Wen/Analytics/commits/main")
+                        openLink("https://github.com/Zhenghao-Wen/Analysis/commits/main")
                     }
                 )
             }
@@ -303,7 +303,7 @@ fun SettingScreen(
                     text = "Github仓库",
                     description = {},
                     onClick = {
-                        openLink("https://github.com/Zhenghao-Wen/Analytics")
+                        openLink("https://github.com/Zhenghao-Wen/Analysis")
                     }
                 )
             }
