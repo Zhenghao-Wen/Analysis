@@ -1,5 +1,5 @@
 [versions]
-agp = "9.2.0"
+agp = "9.4.1"
 kotlin = "2.3.0"
 androidxCore = "1.18.0"
 androidCompileSdk = "37"
@@ -12,7 +12,7 @@ composeMultiplatform = "1.12.2"
 # 1.12.0-alpha03 声明要求 compose.ui 1.12.0-beta01，低于本仓库的 1.12.2，因此搭配自洽。
 # 不可选 1.13.0-alpha02（它要求 compose.ui 1.13.0-alpha02）。
 composeMaterial3 = "1.12.0-alpha03"
-androidTools = "32.0.0"
+androidTools = "32.4.1"
 androidDesugarJdkLibs = "2.1.5"
 koinBom = "4.2.2"
 androidxLifecycle = "2.11.0"
