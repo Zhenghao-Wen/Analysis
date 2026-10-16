@@ -1,5 +1,8 @@
 [versions]
-agp = "9.4.1"
+# AGP 受 Gradle 版本上限约束：实测各版本 VersionCheckPlugin 内嵌的 GRADLE_MIN_VERSION
+#   9.2.x -> 9.4.1 | 9.3.x -> 9.5.0 | 9.4.x -> 9.6.0
+# 本仓库 Gradle wrapper 固定 9.4.1（不升），因此 AGP 最高只能用 9.2.x，取最新的 9.2.1。
+agp = "9.2.1"
 kotlin = "2.3.0"
 androidxCore = "1.18.0"
 androidCompileSdk = "37"
@@ -12,7 +15,8 @@ composeMultiplatform = "1.12.2"
 # 1.12.0-alpha03 声明要求 compose.ui 1.12.0-beta01，低于本仓库的 1.12.2，因此搭配自洽。
 # 不可选 1.13.0-alpha02（它要求 compose.ui 1.13.0-alpha02）。
 composeMaterial3 = "1.12.0-alpha03"
-androidTools = "32.4.1"
+# com.android.tools:* 与 AGP 同套编号（AGP 9.x -> 32.x），须随 AGP 同步，避免错配。
+androidTools = "32.2.1"
 androidDesugarJdkLibs = "2.1.5"
 koinBom = "4.2.2"
 androidxLifecycle = "2.11.0"
