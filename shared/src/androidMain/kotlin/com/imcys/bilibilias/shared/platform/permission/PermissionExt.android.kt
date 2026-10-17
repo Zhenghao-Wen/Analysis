@@ -44,12 +44,13 @@ actual fun rememberDownloadDirectoryPermissionController(
         if (uri == null) {
             onDenied()
         } else {
-            runCatching {
+            try {
                 context.contentResolver.takePersistableUriPermission(
                     uri,
                     android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
+            } catch (ignored: Exception) {
             }
             onGranted(uri.toString())
         }

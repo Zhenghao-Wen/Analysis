@@ -129,7 +129,7 @@ class NewDownloadManager(
             val binder = iBinder as DownloadService.DownloadBinder
             downloadService = binder.service
             downloadScope.launch {
-                binder.service?.let { startDownloadQueue(it) }
+                startDownloadQueue(binder.service)
             }
         }
 
@@ -239,7 +239,7 @@ class NewDownloadManager(
 
             if (!response.isSuccessful) return@withContext
 
-            val body = response.body ?: return@withContext
+            val body = response.body
             val imageBytes = body.bytes()
 
             fileOutputManager.downloadImageToAlbum(imageBytes, fileName, saveDirName)
@@ -251,12 +251,13 @@ class NewDownloadManager(
 
         val intent = Intent(context, DownloadService::class.java)
 
-        runCatching {
+        try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
             } else {
                 context.startService(intent)
             }
+        } catch (ignored: Exception) {
         }
 
         val bindResult = context.bindService(intent, downloadConn, Context.BIND_AUTO_CREATE)
@@ -309,7 +310,7 @@ class NewDownloadManager(
         }
 
         downloadService.onDownloadFinished()
-        runCatching { context.unbindService(downloadConn) }
+        try { context.unbindService(downloadConn) } catch (ignored: Exception) { }
         isDownloading = false
     }
 

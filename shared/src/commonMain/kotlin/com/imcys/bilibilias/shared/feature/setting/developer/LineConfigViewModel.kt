@@ -86,7 +86,7 @@ class LineConfigViewModel(
         viewModelScope.launch {
             appSettingsRepository.appSettingsFlow.collect {
                 _uiState.value = _uiState.value.copy(
-                    currentLineHost = it.biliLineHost ?: ""
+                    currentLineHost = it.biliLineHost
                 )
             }
         }

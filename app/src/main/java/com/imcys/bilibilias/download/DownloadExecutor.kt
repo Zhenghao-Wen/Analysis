@@ -167,7 +167,7 @@ class DownloadExecutor(
      * 替换CDN
      */
     private suspend fun replaceCdn(downloadUrl: String): String {
-        val lineHost = appSettingsRepository.appSettingsFlow.first().biliLineHost ?: ""
+        val lineHost = appSettingsRepository.appSettingsFlow.first().biliLineHost
         val uposRegex = Regex("""upos-sz-estg[0-9a-z]*\.bilivideo\.com""", RegexOption.IGNORE_CASE)
         return if (uposRegex.containsMatchIn(downloadUrl) && lineHost.isNotEmpty()) {
             downloadUrl.replace(uposRegex, lineHost)

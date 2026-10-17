@@ -23,7 +23,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.window.core.layout.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,6 +34,7 @@ import androidx.compose.ui.draw.alpha
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import bilibilias.shared.generated.resources.*
+import com.imcys.bilibilias.ui.utils.ASSizeClass
 import com.imcys.bilibilias.ui.utils.rememberWidthSizeClass
 import com.imcys.bilibilias.ui.component.ASIconButton
 import com.imcys.bilibilias.ui.component.ASTextButton
@@ -77,9 +77,8 @@ fun LineConfigContent(modifier: Modifier) {
     }
 
     val columns = when (widthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> 1
-        WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.EXPANDED -> 2
-        else -> 1
+        ASSizeClass.COMPACT -> 1
+        ASSizeClass.MEDIUM, ASSizeClass.EXPANDED -> 2
     }
     LazyVerticalGrid(
         modifier = modifier

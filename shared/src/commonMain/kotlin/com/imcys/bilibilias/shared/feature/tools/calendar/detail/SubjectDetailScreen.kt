@@ -974,14 +974,12 @@ private fun PlayPlatformSection(
                 contentPadding = PaddingValues(end = 4.dp)
             ) {
                 items(items) { item ->
-                    if (item.iconResId != null) {
-                        PlatformBadge(
-                            name = item.name,
-                            iconResId = item.iconResId
-                        )
-                    } else {
-                        SuggestionChip(onClick = {}, label = { Text(item.name) })
-                    }
+                    // iconResId 为非空类型，此前的 `if (item.iconResId != null)` 恒为 true，
+                    // 其 else 分支（SuggestionChip）实际不可达，已移除。
+                    PlatformBadge(
+                        name = item.name,
+                        iconResId = item.iconResId
+                    )
                 }
             }
         }

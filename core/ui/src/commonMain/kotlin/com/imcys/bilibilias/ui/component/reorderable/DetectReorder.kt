@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.imcys.bilibilias.ui.component.reorderable
 
 /*
@@ -18,6 +20,11 @@ package com.imcys.bilibilias.ui.component.reorderable
 
 
 import androidx.compose.foundation.gestures.awaitFirstDown
+// forEachGesture 已被官方标记 @Deprecated（建议改用 awaitEachGesture）。
+// 本文件两个手势函数依赖 PointerInputScope 接收者（awaitLongPressOrCancellation、
+// awaitPointerEventScope 均在此基础上），改成 awaitEachGesture 会引入
+// awaitPointerEventScope 嵌套，属运行时行为变更，需要在真机上验证拖动/长按。
+// 因此这里保留原实现，仅用文件级 @Suppress("DEPRECATION") 消除编译警告。
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset

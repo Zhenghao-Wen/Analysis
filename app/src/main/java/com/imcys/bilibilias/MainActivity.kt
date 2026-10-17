@@ -227,6 +227,9 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    // FLAG_TRANSLUCENT_NAVIGATION 在 API 35+ 已废弃（系统强制 edge-to-edge），
+    // 此处仅为兼容旧版 MIUI 的虚拟键透明效果而保留，故抑制废弃警告。
+    @Suppress("DEPRECATION")
     private fun specialManufacturersOption() {
         val manufacturer = Build.MANUFACTURER.lowercase()
         when {

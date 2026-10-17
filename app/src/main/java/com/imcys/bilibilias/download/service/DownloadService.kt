@@ -36,7 +36,7 @@ class DownloadService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // 防止用户突然进后台
-        runCatching { startForeground() }
+        try { startForeground() } catch (ignored: Exception) { }
         return START_STICKY
     }
 

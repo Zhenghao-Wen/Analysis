@@ -263,7 +263,6 @@ fun AppSettings.VideoParsePlatform.toDatabaseType(): LoginPlatform = when (this)
     AppSettings.VideoParsePlatform.Web -> LoginPlatform.WEB
     AppSettings.VideoParsePlatform.TV -> LoginPlatform.TV
     AppSettings.VideoParsePlatform.Mobile -> LoginPlatform.MOBILE
-    else -> LoginPlatform.WEB
 }
 
 fun LoginPlatform.toDataStoreType() = when (this) {
@@ -279,5 +278,4 @@ fun AppSettings.HomeLayoutType.getDescription(): String = when (this) {
     AppSettings.HomeLayoutType.UpdateInfo -> "更新信息"
     AppSettings.HomeLayoutType.Tools -> "工具列表"
     AppSettings.HomeLayoutType.DownloadList -> "下载列表"
-    else -> this.name
 }

@@ -75,7 +75,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.window.core.layout.WindowWidthSizeClass
 import bilibilias.shared.generated.resources.Res
 import bilibilias.shared.generated.resources.analysis_bangumi
 import bilibilias.shared.generated.resources.analysis_cache_config
@@ -125,6 +124,7 @@ import com.imcys.bilibilias.shared.platform.clipboard.setClipboardText
 import com.imcys.bilibilias.shared.feature.analysis.components.DongmhuaDownloadScreen
 import com.imcys.bilibilias.shared.feature.analysis.components.VideoDownloadScreen
 import com.imcys.bilibilias.shared.feature.analysis.navigation.AnalysisRoute
+import com.imcys.bilibilias.ui.utils.ASSizeClass
 import com.imcys.bilibilias.ui.utils.rememberWidthSizeClass
 import com.imcys.bilibilias.ui.component.ASAlertDialog
 import com.imcys.bilibilias.ui.component.ASAsyncImage
@@ -234,7 +234,7 @@ fun AnalysisScreen(
                         label = "screen-change"
                     ) { targetState ->
                         when (targetState) {
-                            WindowWidthSizeClass.COMPACT, WindowWidthSizeClass.MEDIUM -> {
+                            ASSizeClass.COMPACT, ASSizeClass.MEDIUM -> {
                                 VerticalAnalysisVideoCardList(
                                     type,
                                     uiState.isBILILogin,

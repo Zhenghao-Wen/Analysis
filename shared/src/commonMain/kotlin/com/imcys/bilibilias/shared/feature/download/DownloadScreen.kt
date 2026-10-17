@@ -330,7 +330,6 @@ private fun getSortTypeDisplayName(sortType: AppSettings.DownloadSortType): Stri
         AppSettings.DownloadSortType.DownloadSort_TitleDesc -> "标题Z→A"
         AppSettings.DownloadSortType.DownloadSort_SizeDesc -> "大小↓"
         AppSettings.DownloadSortType.DownloadSort_SizeAsc -> "大小↑"
-        else -> "时间↓"
     }
 }
 

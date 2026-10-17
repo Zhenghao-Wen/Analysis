@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.window.core.layout.WindowWidthSizeClass
 import androidx.navigation3.runtime.NavKey
 import com.imcys.bilibilias.common.event.sendSaveBackStackChannel
 import com.imcys.bilibilias.common.event.sendToastEvent
@@ -43,6 +42,7 @@ import com.imcys.bilibilias.shared.util.StorageInfoData
 import com.imcys.bilibilias.shared.util.StorageUtil
 import com.imcys.bilibilias.shared.platform.storage.StoragePlatform
 import com.imcys.bilibilias.shared.platform.permission.rememberDownloadDirectoryPermissionController
+import com.imcys.bilibilias.ui.utils.ASSizeClass
 import com.imcys.bilibilias.ui.utils.rememberWidthSizeClass
 import com.imcys.bilibilias.ui.component.ASIconButton
 import com.imcys.bilibilias.ui.component.ASTopAppBar
@@ -166,7 +166,7 @@ fun StorageManagementSuccessScreen(
             AnimatedStorageRing(
                 data, modifier = Modifier
                     .fillMaxWidth(
-                        if (windowWidthSizeClass == WindowWidthSizeClass.COMPACT) 0.6f else 0.4f
+                        if (windowWidthSizeClass == ASSizeClass.COMPACT) 0.6f else 0.4f
                     )
                     .aspectRatio(1f)
             )
