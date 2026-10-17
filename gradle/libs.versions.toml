@@ -35,11 +35,13 @@ multiplatformNav3Ui = "1.1.1"
 documentfile = "1.1.0"
 ffmpegKitX6kb = "6.1.1"
 appfunctions = "1.0.0-alpha07"
-# Room：3.0.3 会让 KSP 报 [MissingType]（KSP 在开启 useKSP2 时对 Room 实体类型的已知问题，
-# 详见提交说明）。本次取首个稳定版 3.0.0，并与其要求的 sqlite 2.7.0 精确配对
-# （3.0.0/3.0.1/3.0.2 均要求 sqlite 2.7.0；只有 3.0.3 是 sqlite 2.7.1 + framework 2.7.0 的错位组合）。
-room3 = "3.0.0"
-sqlite = "2.7.0"
+# Room：3.0.0 及以上会让 KSP 报 [MissingType]（KSP2 对 Room 实体类型解析的已知缺陷，
+# 见 google/ksp#2026，以 stale 关闭未修复）。KSP 2.3.x 已移除 KSP1 实现
+# （gradle 插件内仅剩 KspAA* 即 KSP2 的类，无 legacy），因此无法通过 ksp.useKSP2=false 规避。
+# 结论：维持 3.0.0-alpha05 + sqlite 2.6.2 这一已验证可编译的组合，暂不升级。
+# 若要再试，应等 KSP 修复该缺陷，或等 KSP 2.4.x 出现后再整体评估。
+room3 = "3.0.0-alpha05"
+sqlite = "2.6.2"
 ksoup = "0.2.6"
 # 本地二维码生成（替代原先依赖 pan.misakamoe.com 的云端出图服务）
 # 1.3.1 要求 compose.ui 1.12.1，本仓库已升至 1.12.2，因此可以解除此前的 1.1.1 锁定。
