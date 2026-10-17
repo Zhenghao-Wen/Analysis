@@ -105,10 +105,9 @@ private inline fun <reified T : KotlinBaseExtension> Project.configureKotlin() =
              */
             "-Xconsistent-data-class-copy-visibility",
         )
-        // 使用官方 -X 形式启用 context parameters，替代"不安全内部参数"
-        // -XXLanguage:+ContextParameters，见 KotlinMultiplatform.kt 中的说明。
-        freeCompilerArgs.add("-Xcontext-parameters")
-        // -Xexplicit-backing-fields 对当前语言版本已是冗余参数，代码中的 `field = ...` 不受影响。
+        // context parameters 与 explicit backing fields 在当前生效的语言版本（2.4）下
+        // 均已默认启用，显式传参只会被判为"冗余参数"，故都不再传递。
+        // 见 KotlinMultiplatform.kt 中的同类说明。
         freeCompilerArgs.add("-Xreturn-value-checker=check")
         // `expect`/`actual` 类仍是 Beta 特性，见 KotlinMultiplatform.kt 中的同类说明。
         freeCompilerArgs.add("-Xexpect-actual-classes")
