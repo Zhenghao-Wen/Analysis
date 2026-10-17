@@ -125,11 +125,11 @@ class FileOutputManager(
                     out.flush()
                 }
             } catch (e: Exception) {
-                runCatching { resolver.delete(it, null, null) }
+                try { resolver.delete(it, null, null) } catch (ignored: Exception) { }
                 throw e
             } finally {
                 val update = ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }
-                runCatching { resolver.update(it, update, null, null) }
+                try { resolver.update(it, update, null, null) } catch (ignored: Exception) { }
             }
         }
     }

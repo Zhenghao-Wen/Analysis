@@ -20,12 +20,10 @@ kotlin {
         iosArm64(),
         iosSimulatorArm64(),
     ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ASShared"
-            isStatic = true
-            export(project(":core:data"))
-            transitiveExport = true
-        }
+        // framework 的配置移到文件末尾的 configureSharedFramework()，
+        // 那里对该实验性 API 做了显式 opt-in（transitiveExport 目前是
+        // @ExperimentalKotlinGradlePluginApi 且已标记 Deprecated）。
+        configureSharedFramework(iosTarget.binaries.framework { }, project)
     }
 
     sourceSets {
@@ -100,4 +98,23 @@ buildConfig {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.ui.tooling)
+}
+
+/**
+ * 配置 iOS 静态 framework。
+ *
+ * `transitiveExport` 目前带 `@ExperimentalKotlinGradlePluginApi` 且已标记 Deprecated，
+ * 在脚本里直接使用会产生"实验性 API"警告。这里集中到带 opt-in 的函数中，
+ * 既保留原有导出行为（让 framework 导出 :core:data 的传递依赖），又消除警告。
+ */
+@OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+@Suppress("DEPRECATION")
+private fun configureSharedFramework(
+    framework: org.jetbrains.kotlin.gradle.plugin.mpp.Framework,
+    project: org.gradle.api.Project,
+) {
+    framework.baseName = "ASShared"
+    framework.isStatic = true
+    framework.export(project.project(":core:data"))
+    framework.transitiveExport = true
 }

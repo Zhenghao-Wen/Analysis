@@ -72,8 +72,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
-import androidx.window.core.layout.WindowHeightSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
 import bilibilias.shared.ASBuildConfig
 import bilibilias.shared.generated.resources.Res
 import bilibilias.shared.generated.resources.app_name
@@ -105,6 +103,7 @@ import com.imcys.bilibilias.shared.platform.runtime.openLink
 import com.imcys.bilibilias.shared.platform.runtime.rememberAppSignature
 import com.imcys.bilibilias.shared.feature.analysis.navigation.AnalysisRoute
 import com.imcys.bilibilias.shared.feature.home.navigation.HomeRoute
+import com.imcys.bilibilias.ui.utils.ASSizeClass
 import com.imcys.bilibilias.ui.utils.rememberHeightSizeClass
 import com.imcys.bilibilias.ui.utils.rememberWidthSizeClass
 import com.imcys.bilibilias.ui.component.ASAlertDialog
@@ -257,8 +256,8 @@ internal fun HomeScreen(
             with(sharedTransitionScope) {
                 AnimatedContent(windowHeightSizeClass) {
                     when (it) {
-                        WindowHeightSizeClass.COMPACT -> {}
-                        WindowHeightSizeClass.MEDIUM, WindowHeightSizeClass.EXPANDED -> {
+                        ASSizeClass.COMPACT -> {}
+                        ASSizeClass.MEDIUM, ASSizeClass.EXPANDED -> {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -273,7 +272,7 @@ internal fun HomeScreen(
                                     ASCardTextField(
                                         modifier = Modifier
                                             .then(
-                                                if (windowsWidthSizeClass != WindowWidthSizeClass.COMPACT &&
+                                                if (windowsWidthSizeClass != ASSizeClass.COMPACT &&
                                                     pagerState.currentPage == 0
                                                 ) Modifier.fillMaxWidth(0.8f)
                                                 else Modifier.fillMaxWidth()
@@ -339,9 +338,9 @@ private fun HomeContent(
     val windowsWidthSizeClass = rememberWidthSizeClass()
     val windowHeightSizeClass = rememberHeightSizeClass()
     val toolsHistoryCount = when (windowsWidthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> 2
-        WindowWidthSizeClass.MEDIUM if windowHeightSizeClass != WindowHeightSizeClass.COMPACT -> 4
-        WindowWidthSizeClass.EXPANDED if windowHeightSizeClass != WindowHeightSizeClass.COMPACT -> 6
+        ASSizeClass.COMPACT -> 2
+        ASSizeClass.MEDIUM if windowHeightSizeClass != ASSizeClass.COMPACT -> 4
+        ASSizeClass.EXPANDED if windowHeightSizeClass != ASSizeClass.COMPACT -> 6
         else -> 4
     }
 
@@ -385,7 +384,7 @@ private fun HomeContent(
                 .padding(horizontal = 15.dp)
                 .padding(top = 10.dp)
                 .then(
-                    if (windowsWidthSizeClass != WindowWidthSizeClass.COMPACT) Modifier.fillMaxWidth(
+                    if (windowsWidthSizeClass != ASSizeClass.COMPACT) Modifier.fillMaxWidth(
                         0.8f
                     ) else Modifier
                 ),
@@ -910,7 +909,7 @@ private fun HomeScaffold(
             with(sharedTransitionScope) {
                 AnimatedContent(windowHeightSizeClass) {
                     when (it) {
-                        WindowHeightSizeClass.COMPACT -> {
+                        ASSizeClass.COMPACT -> {
                             FloatingActionButton(
                                 onClick = goToAnalysis,
                                 modifier = Modifier.sharedElement(
@@ -934,7 +933,7 @@ private fun HomeScaffold(
                             }
                         }
 
-                        WindowHeightSizeClass.MEDIUM, WindowHeightSizeClass.EXPANDED -> {}
+                        ASSizeClass.MEDIUM, ASSizeClass.EXPANDED -> {}
                     }
                 }
             }

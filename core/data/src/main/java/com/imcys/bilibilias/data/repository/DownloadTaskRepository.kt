@@ -91,7 +91,7 @@ class DownloadTaskRepository(
                 userName = userInfo?.name
                 userId = userInfo?.mid
             }
-            runCatching {
+            try {
                 appAPIService.submitASDownloadData(
                     aid = aid,
                     bvid = bvid,
@@ -102,6 +102,7 @@ class DownloadTaskRepository(
                     userName = userName,
                     userId = userId
                 )
+            } catch (ignored: Exception) {
             }
         }
     }
@@ -154,7 +155,7 @@ class DownloadTaskRepository(
 
         // 提交下载数据到后台备份
         if (data.episodes.firstOrNull()?.aid != null) {
-            runCatching {
+            try {
                 val videoInfo =
                     autoRequestRetry(onErrorTip = { "网络异常，提交视频信息获取失败" }) {
                         videoInfoRepository.getVideoView(
@@ -170,6 +171,7 @@ class DownloadTaskRepository(
                     upName = videoData.owner.name,
                     mid = videoData.owner.mid
                 )
+            } catch (ignored: Exception) {
             }
         }
 

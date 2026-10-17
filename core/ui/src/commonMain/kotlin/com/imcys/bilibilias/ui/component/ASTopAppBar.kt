@@ -12,9 +12,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.window.core.layout.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.imcys.bilibilias.ui.utils.ASSizeClass
 import com.imcys.bilibilias.ui.utils.rememberWidthSizeClass
 
 enum class BILIBILIASTopAppBarStyle {
@@ -35,14 +35,14 @@ fun ASTopAppBar(
     alwaysDisplay: Boolean = true
 ) {
     val windowWidthSizeClass = rememberWidthSizeClass()
-    if (windowWidthSizeClass != WindowWidthSizeClass.COMPACT && !alwaysDisplay) return
+    if (windowWidthSizeClass != ASSizeClass.COMPACT && !alwaysDisplay) return
     val mColors = colors ?: when (style) {
         BILIBILIASTopAppBarStyle.Small -> TopAppBarDefaults.topAppBarColors()
         BILIBILIASTopAppBarStyle.Large -> TopAppBarDefaults.topAppBarColors()
         BILIBILIASTopAppBarStyle.CenterAligned -> TopAppBarDefaults.topAppBarColors()
     }
     val topBarModifier = Modifier.padding(contentPadding())
-    AnimatedVisibility(windowWidthSizeClass == WindowWidthSizeClass.COMPACT || alwaysDisplay) {
+    AnimatedVisibility(windowWidthSizeClass == ASSizeClass.COMPACT || alwaysDisplay) {
         when (style) {
             BILIBILIASTopAppBarStyle.Small -> {
                 TopAppBar(

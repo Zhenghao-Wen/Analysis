@@ -40,6 +40,9 @@ actual fun rememberAppSignature(): String? {
     val packageName = context.packageName
     return remember(packageName, context) {
         try {
+            // GET_SIGNATURES 在 API 33+ 已废弃，但为了兼容 Android 9 以下仍需使用，
+            // 故在声明处集中抑制该废弃警告。
+            @Suppress("DEPRECATION")
             val packageInfo = context.packageManager.getPackageInfo(
                 packageName,
                 if (Build.VERSION.SDK_INT >= 28)

@@ -33,11 +33,12 @@ class AsCookiesStorage(
 
     init {
         // 初始化当前Cookie
-        runCatching {
+        try {
             daoCoroutineScope.launch {
                 syncDataBaseCookies()
                 isInit = true
             }
+        } catch (ignored: Exception) {
         }
     }
 

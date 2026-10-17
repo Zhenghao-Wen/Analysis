@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.imcys.bilibilias.ui.component.reorderable
 
 /*
@@ -18,6 +20,9 @@ package com.imcys.bilibilias.ui.component.reorderable
 
 
 import androidx.compose.foundation.gestures.drag
+// forEachGesture 已弃用；本文件里 block 内要调用 detectDrag(...)（PointerInputScope 扩展，
+// 内部自开 awaitPointerEventScope），改用 awaitEachGesture 会造成作用域嵌套，
+// 属运行时行为变更，需真机验证拖动重排。故保留原实现并以文件级 @Suppress 消警。
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset

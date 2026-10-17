@@ -67,7 +67,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
-import androidx.window.core.layout.WindowWidthSizeClass
 import bilibilias.shared.generated.resources.Res
 import bilibilias.shared.generated.resources.cd_back
 import bilibilias.shared.generated.resources.cd_download_qrcode
@@ -92,6 +91,7 @@ import com.imcys.bilibilias.network.NetWorkResult
 import com.imcys.bilibilias.network.model.QRCodeInfo
 import com.imcys.bilibilias.shared.platform.firebase.FirebaseExt
 import com.imcys.bilibilias.shared.feature.login.navigation.QRCodeLoginRoute
+import com.imcys.bilibilias.ui.utils.ASSizeClass
 import com.imcys.bilibilias.ui.utils.rememberWidthSizeClass
 import com.imcys.bilibilias.ui.component.ASIconButton
 import com.imcys.bilibilias.ui.component.ASTopAppBar
@@ -177,7 +177,7 @@ fun QRCodeLoginScreen(
             SharedTransitionLayout {
                 AnimatedContent(windowWidthSizeClass, label = "扫码登录内容区域") { size ->
                     when (size) {
-                        WindowWidthSizeClass.COMPACT -> {
+                        ASSizeClass.COMPACT -> {
                             QRCodeLoginContentWidthCompact(
                                 route,
                                 uiState,
@@ -195,7 +195,7 @@ fun QRCodeLoginScreen(
                             )
                         }
 
-                        WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.EXPANDED -> {
+                        ASSizeClass.MEDIUM, ASSizeClass.EXPANDED -> {
                             QRCodeLoginContentWidthMediumAndExpanded(
                                 route,
                                 uiState,
@@ -415,7 +415,7 @@ private fun ActionButton(
     with(sharedTransitionScope) {
         AnimatedContent(windowWidthSizeClass) { size ->
             when (size) {
-                WindowWidthSizeClass.COMPACT -> {
+                ASSizeClass.COMPACT -> {
                     Row(modifier) {
                         Button(
                             enabled = agreePrivacyPolicy,
@@ -472,7 +472,7 @@ private fun ActionButton(
                     }
                 }
 
-                WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.EXPANDED -> {
+                ASSizeClass.MEDIUM, ASSizeClass.EXPANDED -> {
                     Column(modifier) {
                         Button(
                             enabled = agreePrivacyPolicy,
@@ -610,12 +610,10 @@ private fun QRCodeContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val modifier = when (widthSizeClass) {
-                WindowWidthSizeClass.COMPACT -> Modifier.fillMaxWidth(0.6f)
-                WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.EXPANDED -> Modifier.fillMaxHeight(
+                ASSizeClass.COMPACT -> Modifier.fillMaxWidth(0.6f)
+                ASSizeClass.MEDIUM, ASSizeClass.EXPANDED -> Modifier.fillMaxHeight(
                     0.6f
                 )
-
-                else -> Modifier
             }.aspectRatio(1f)
 
             Surface(

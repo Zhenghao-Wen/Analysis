@@ -84,7 +84,7 @@ fun ASCardTextField(
     LaunchedEffect(autoFocus, value,firstOpen) {
         if (autoFocus && value.isEmpty() && firstOpen) {
             if (requestFocusDelayMillis > 0) delay(requestFocusDelayMillis)
-            runCatching { focusRequester.requestFocus() }
+            try { focusRequester.requestFocus() } catch (ignored: Exception) { }
         }
         firstOpen = false
     }

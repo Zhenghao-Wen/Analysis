@@ -6,7 +6,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.window.core.layout.WindowWidthSizeClass
+import com.imcys.bilibilias.ui.utils.ASSizeClass
 import com.imcys.bilibilias.ui.utils.rememberWidthSizeClass
 
 @Composable
@@ -22,10 +22,9 @@ fun ASAnimatedContent(
         modifier = modifier
     ) { size ->
         when (size) {
-            WindowWidthSizeClass.COMPACT -> compactContent()
-            WindowWidthSizeClass.MEDIUM -> mediumContent()
-            WindowWidthSizeClass.EXPANDED -> expandedContent()
-            else -> compactContent()
+            ASSizeClass.COMPACT -> compactContent()
+            ASSizeClass.MEDIUM -> mediumContent()
+            ASSizeClass.EXPANDED -> expandedContent()
         }
     }
 }
@@ -37,7 +36,7 @@ fun Modifier.maybeNestedScroll(
     alwaysDisplay: Boolean = false
 ): Modifier {
     val windowWidthSizeClass = rememberWidthSizeClass()
-    val isTopBarVisible = windowWidthSizeClass == WindowWidthSizeClass.COMPACT || alwaysDisplay
+    val isTopBarVisible = windowWidthSizeClass == ASSizeClass.COMPACT || alwaysDisplay
     return if (isTopBarVisible && scrollBehavior != null) {
         nestedScroll(scrollBehavior.nestedScrollConnection)
     } else { this }
