@@ -20,10 +20,12 @@ kotlin {
         iosArm64(),
         iosSimulatorArm64(),
     ).forEach { iosTarget ->
-        // framework 的配置移到文件末尾的 configureSharedFramework()，
-        // 那里对该实验性 API 做了显式 opt-in（transitiveExport 目前是
-        // @ExperimentalKotlinGradlePluginApi 且已标记 Deprecated）。
-        configureSharedFramework(iosTarget.binaries.framework { }, project)
+        iosTarget.binaries.framework {
+            // 具体配置在文件末尾的 Framework.configureSharedFramework() 中，
+            // 那里对该实验性 API 做了显式 opt-in（transitiveExport 目前是
+            // @ExperimentalKotlinGradlePluginApi 且已标记 Deprecated）。
+            configureSharedFramework(project)
+        }
     }
 
     sourceSets {
@@ -109,12 +111,11 @@ dependencies {
  */
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 @Suppress("DEPRECATION")
-private fun configureSharedFramework(
-    framework: org.jetbrains.kotlin.gradle.plugin.mpp.Framework,
+private fun org.jetbrains.kotlin.gradle.plugin.mpp.Framework.configureSharedFramework(
     project: org.gradle.api.Project,
 ) {
-    framework.baseName = "ASShared"
-    framework.isStatic = true
-    framework.export(project.project(":core:data"))
-    framework.transitiveExport = true
+    baseName = "ASShared"
+    isStatic = true
+    export(project.project(":core:data"))
+    transitiveExport = true
 }
