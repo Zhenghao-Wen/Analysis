@@ -61,12 +61,10 @@ internal fun Project.configureKotlinMultiplatformAndroid(kotlinMultiplatformExte
                  */
                 "-Xconsistent-data-class-copy-visibility",
             )
-            // 使用官方 -X 形式启用 context parameters。原写法 -XXLanguage:+ContextParameters
-            // 属于"不安全的内部编译器参数"，会为每个模块刷出一条 ATTENTION 警告；
-            // -Xcontext-parameters 是编译器自带说明里推荐的等价开关，语义相同但不告警。
-            freeCompilerArgs.add("-Xcontext-parameters")
-            // -Xexplicit-backing-fields 已无需显式开启（编译器提示其对当前语言版本是冗余参数），
-            // 代码中的 `field = ...` 写法在默认设置下依然可用。
+            // context parameters：当前生效的语言版本（2.4）已默认启用，
+            // 显式传 -Xcontext-parameters / -XXLanguage:+ContextParameters 均被判为冗余参数，
+            // 因此不再传递（代码中的 context(...) 写法依然可用）。
+            // -Xexplicit-backing-fields 同理已默认启用，不再传递。
             freeCompilerArgs.add("-Xreturn-value-checker=check")
             // `expect`/`actual` 类仍是 Beta 特性。本仓库在多处用它表达平台差异
             // （如 FileSystem、StoragePlatform、KtorLogBridge、FirebaseExt、
