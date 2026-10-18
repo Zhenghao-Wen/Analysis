@@ -62,8 +62,8 @@ import bilibilias.shared.generated.resources.tools_other
 import bilibilias.shared.generated.resources.tools_parser_tools
 import bilibilias.shared.generated.resources.tools_video_processing
 import com.imcys.bilibilias.common.event.sendToastEvent
-import com.imcys.bilibilias.shared.util.ASConstant.QQ_CHANNEL_URL
-import com.imcys.bilibilias.shared.util.ASConstant.QQ_GROUP_URL
+// import com.imcys.bilibilias.shared.util.ASConstant.QQ_CHANNEL_URL
+// import com.imcys.bilibilias.shared.util.ASConstant.QQ_GROUP_URL
 import com.imcys.bilibilias.shared.platform.device.getDeviceInfoCopyString
 import com.imcys.bilibilias.shared.platform.runtime.openLink
 import com.imcys.bilibilias.shared.platform.clipboard.setClipboardText
@@ -286,6 +286,7 @@ fun FeedbackDialog(showFeedbackDialog: Boolean, onDismiss: () -> Unit) {
                     }
                 }
 
+                /* 本项目已停止分发，除 Analysis 仓库外没有官方群组，故注释掉该联系方式入口
                 if (!ASBuildConfig.ENABLED_PLAY_APP_MODE) {
                     Surface(
                         shape = CardDefaults.shape,
@@ -330,6 +331,7 @@ fun FeedbackDialog(showFeedbackDialog: Boolean, onDismiss: () -> Unit) {
                         }
                     }
                 }
+                */
 
 
             }

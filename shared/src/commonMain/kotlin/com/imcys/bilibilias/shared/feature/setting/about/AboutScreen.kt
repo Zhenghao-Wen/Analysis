@@ -98,13 +98,16 @@ fun AboutContent(
             Spacer(Modifier.height(10.dp))
             TitleArea()
         }
+        /* 本项目已停止分发，除 Analysis 仓库外没有官方群组，故注释掉该联系方式入口
         item {
             Spacer(Modifier.height(10.dp))
             ButtonArea()
         }
+        */
     }
 }
 
+/* 本项目已停止分发，除 Analysis 仓库外没有官方群组，故注释掉该联系方式入口
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ButtonArea(
@@ -149,6 +152,7 @@ fun ButtonArea(
         }
     }
 }
+*/
 
 @Composable
 fun TitleArea(
