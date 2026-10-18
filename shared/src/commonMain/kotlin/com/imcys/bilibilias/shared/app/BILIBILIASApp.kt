@@ -355,7 +355,7 @@ fun InstructionsPage(onClickKnowAbout: () -> Unit = {}) {
                         item {
                             Text(
                                 """
-                                    注意：该程序由非开源仓库开发者打包而来，这是因为本项目已经停止分发，正常情况下，你不可能在任何地方获得本项目开发者打包的安装包，除非你是学习本项目的开发者，否则你目前使用的APP有可能遭遇篡改。
+                                    注意：该程序由非开源仓库开发者打包而来，这是因为本项目已经停止分发。使用即代表你已同意带来的一切后果自负，并不会在国内主流平台传播。除非你是学习本项目的开发者，否则你目前使用的APP有可能遭遇篡改。
                                 """.trimIndent(),
                                 color = MaterialTheme.colorScheme.tertiary,
                                 fontWeight = FontWeight.Bold

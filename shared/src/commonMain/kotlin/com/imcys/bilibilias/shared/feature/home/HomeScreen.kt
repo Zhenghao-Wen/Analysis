@@ -355,12 +355,18 @@ private fun HomeContent(
             unknownAppSign && Instant.fromEpochMilliseconds(appSettings.unknownAppSignWarningCloseTime) <= oneMonthAgo
         }
 
-    val currentSHA1 = rememberAppSignature()
-    LaunchedEffect(currentSHA1) {
-        if (currentSHA1 == null || !checkSign(currentSHA1)) {
-            unknownAppSign = true
-        }
-    }
+    // 签名校验已停用：本项目已停止分发，不存在可供对照的「官方包」，
+    // 因此不再用硬编码的 SHA1 去判定当前安装包是否被篡改，
+    // 也就不会再出现「当前应用签名未知」的横幅提示。
+    // 保留下方 unknownAppSign / shouldShowUnknownAppSignWarning 及对应 UI 代码以便恢复：
+    // 由于 unknownAppSign 恒为 false，该横幅现在恒定不展示。
+    //
+    // val currentSHA1 = rememberAppSignature()
+    // LaunchedEffect(currentSHA1) {
+    //     if (currentSHA1 == null || !checkSign(currentSHA1)) {
+    //         unknownAppSign = true
+    //     }
+    // }
 
     LaunchedEffect(Unit) {
         vm.initOldAppInfo()
@@ -612,7 +618,7 @@ private fun PackageSourceWarningDialog(
         title = { Text("注意") },
         text = {
             Text(
-                "该程序由非开源仓库开发者打包而来，这是因为本项目已经停止分发，正常情况下，你不可能在任何地方获得本项目开发者打包的安装包，除非你是学习本项目的开发者，否则你目前使用的APP有可能遭遇篡改。"
+                "该程序由非开源仓库开发者打包而来，这是因为本项目已经停止分发。使用即代表你已同意带来的一切后果自负，并不会在国内主流平台传播。除非你是学习本项目的开发者，否则你目前使用的APP有可能遭遇篡改。"
             )
         },
         confirmButton = {
