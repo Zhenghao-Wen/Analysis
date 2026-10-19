@@ -19,6 +19,17 @@ sealed interface MediaContainer {
         val entries: List<MediaContainer> by lazy {
             listOf(M4A, MP3, MP4, MKV)
         }
+
+        /**
+         * 由持久化的 extension 字符串还原容器类型。
+         *
+         * 该逻辑原先在 `MediaContainerConverter`（`@TypeConverter`）中；为了移除对
+         * `@TypeConverters` 的依赖（Room 3.0.x + KSP2 下该注解会导致 `[MissingType]`），
+         * 改为普通函数，由实体上的 `@Ignore` 计算属性调用。
+         * 存储取值仍是 extension（"m4a"/"mp3"/"mp4"/"mkv"），与改造前完全一致。
+         */
+        fun fromExtension(extension: String): MediaContainer =
+            entries.first { it.extension == extension }
     }
 
     object M4A : MediaContainer {

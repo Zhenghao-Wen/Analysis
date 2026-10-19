@@ -3,11 +3,8 @@ package com.imcys.bilibilias.database.entity
 import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
-import androidx.room3.TypeConverters
-import com.imcys.bilibilias.database.converter.CookieEncodingConverter
 import com.imcys.bilibilias.database.currentTimeMillis
 
-@TypeConverters(CookieEncodingConverter::class)
 @Entity(tableName = "bili_user_cookies")
 data class BILIUserCookiesEntity(
     @PrimaryKey(true)

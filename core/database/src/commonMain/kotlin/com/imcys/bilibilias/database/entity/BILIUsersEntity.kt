@@ -3,12 +3,9 @@ package com.imcys.bilibilias.database.entity
 import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
-import androidx.room3.TypeConverters
 import com.imcys.bilibilias.database.currentTimeMillis
-import com.imcys.bilibilias.database.converter.LoginPlatformConverter
 
 @Entity(tableName = "bili_users")
-@TypeConverters(LoginPlatformConverter::class)
 data class BILIUsersEntity(
     @PrimaryKey(true)
     var id: Long = 0,

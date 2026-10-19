@@ -20,6 +20,10 @@ androidTools = "32.2.1"
 androidDesugarJdkLibs = "2.1.5"
 koinBom = "4.2.2"
 androidxLifecycle = "2.11.0"
+# KSP 2.3.4 为当前唯一可用版本：曾试过升到 2.3.12 以配合 Room 3.0.x，
+# 但 KSP 2.3.12 下 Room 3.0.0 仍报同一 [MissingType]，故回退。
+# 注意 KSP 2.3.12 的 symbol-processing-api 依赖 kotlin-stdlib 2.3.20；
+# 本仓库实际生效的 Kotlin 为 2.3.21（由 kmpNativeCoroutines 1.0.3 经 KGP 传递决定）。
 ksp = "2.3.4"
 protobufPlugin = "0.9.6"
 androidxDatastore = "1.2.0"
@@ -35,11 +39,42 @@ multiplatformNav3Ui = "1.1.1"
 documentfile = "1.1.0"
 ffmpegKitX6kb = "6.1.1"
 appfunctions = "1.0.0-alpha07"
-# Room：升级到 3.0.3 会让 KSP 报 [MissingType]（详见提交说明），先退回已验证可编译的组合。
-# 这里同时回退 sqlite，是为了让本次 CI 只回答一个问题：
-# 「除去 room/sqlite，其余 9 项升级是否成立」。
-room3 = "3.0.0-alpha05"
-sqlite = "2.6.2"
+# Room 3.0.x 与 KSP2 2.3.4 不兼容（历史结论，保留供参考）：
+#   room3 3.0.0 / 3.0.3 时，:core:database:kspAndroidMain 对 5 个实体全部报 [MissingType]，
+#   随后 RoomProcessor 报 "not all of its dependencies could be resolved"。
+#   已在正确环境（Kotlin 2.3.21 + KSP 2.3.4）下复现，且已排除 sqlite 版本错位 / 坐标缺失 /
+#   Room 插件 DSL 变化；KSP1 回退也不可用（KSP 2.3.4 插件内嵌提示
+#   "KSP1 is no longer available"，只剩 KspAATask 即 KSP2 实现）。
+#
+# 最终结论：Room 3.0.x（3.0.0 / 3.0.3）在本仓库不可用，已穷尽可试手段，不要再盲试。
+# 关联证据与最小复现建议见 room-ksp-issue-report.md。
+# 已试组合（均在 :core:database:kspAndroidMain 失败，错误完全相同）：
+#   3.0.3 + sqlite 2.7.1 + KSP 2.3.4 + Kotlin 2.4.20（环境本身错误）
+#   3.0.0 + sqlite 2.7.0 + KSP 2.3.4 + Kotlin 2.3.21（环境正确，仍失败）
+#   3.0.0 + sqlite 2.7.0 + KSP 2.3.12 + Kotlin 2.3.21（换新 KSP，仍失败）
+# 对照组：3.0.0-alpha05 + sqlite 2.6.2 + KSP 2.3.4 + Kotlin 2.3.21 可正常编译。
+# 已排除：sqlite 版本错位、坐标缺失、Room 插件 DSL 变化、Kotlin/KSP 版本不匹配、
+#   回退 KSP1（KSP 2.3.4 插件内嵌提示 "KSP1 is no longer available"，只剩 KspAATask）。
+# Room 3.0.0 稳定版。
+#
+# 历史：升级到 3.0.x 时 KSP 会对若干实体报 [MissingType]。经 4 轮二分定位，
+# 根因是：**凡承载 `@TypeConverters` 的元素都会被 Room 3.0.x 报 MissingType**
+# （把注解从 5 个实体移到 @Database 后，错误从 5 条减为 1 条且指向数据库类本身）。
+# 与 Kotlin/KSP 版本、expect 默认值、enum 属性、@ColumnInfo、converter 写 class 还是
+# object 都无关。
+#
+# 解决方式：**彻底移除 @TypeConverters**（本仓库已不再包含任何 converter）
+#   1) 全部 enum 属性：直接依赖 Room 内置 enum<->String 转换（存 enum 的 name，
+#      与原 *Converter 行为一致，数据无需迁移）。已由实验验证可用。
+#   2) MediaContainer（sealed interface）：列改为存 extension 字符串，
+#      实体上提供 @Ignore 计算属性还原模型；取值与列名均不变。
+#   3) NamingConventionInfo（sealed class）：列改为存 JSON 字符串，
+#      编解码逻辑移到普通对象 NamingConventionCodec（与旧 converter 完全一致）。
+# 因此 schema 与已存数据均无变化，不需要数据库迁移。
+#
+# 注意：今后**不要**再给实体/DAO/数据库添加 @TypeConverters，否则会重新触发该问题。
+room3 = "3.0.0"
+sqlite = "2.7.0"
 ksoup = "0.2.6"
 # 本地二维码生成（替代原先依赖 pan.misakamoe.com 的云端出图服务）
 # 1.3.1 要求 compose.ui 1.12.1，本仓库已升至 1.12.2，因此可以解除此前的 1.1.1 锁定。

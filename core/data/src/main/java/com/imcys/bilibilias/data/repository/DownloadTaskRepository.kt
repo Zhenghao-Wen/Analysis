@@ -16,6 +16,7 @@ import com.imcys.bilibilias.database.entity.download.DownloadTask
 import com.imcys.bilibilias.database.entity.download.DownloadTaskNode
 import com.imcys.bilibilias.database.entity.download.DownloadTaskNodeType
 import com.imcys.bilibilias.database.entity.download.DownloadTaskType
+import com.imcys.bilibilias.database.entity.download.NamingConventionCodec
 import com.imcys.bilibilias.database.entity.download.NamingConventionInfo
 import com.imcys.bilibilias.database.currentTimeMillis
 import com.imcys.bilibilias.datastore.source.UsersDataSource
@@ -818,10 +819,10 @@ class DownloadTaskRepository(
             updateTime = currentTimeMillis(),
             downloadMode = downloadMode,
             taskId = childTaskId,  // 更新子任务关联
-            namingConventionInfo = mNamingConventionInfo,
-            mediaContainer = when(downloadMode){
-                DownloadMode.AUDIO_ONLY -> mediaContainerConfig.audioContainer
-                else -> mediaContainerConfig.videoContainer
+            namingConventionInfoJson = NamingConventionCodec.encode(mNamingConventionInfo),
+            mediaContainerExtension = when(downloadMode){
+                DownloadMode.AUDIO_ONLY -> mediaContainerConfig.audioContainer.extension
+                else -> mediaContainerConfig.videoContainer.extension
             },
             qualityDescription = qualityDescription
         )?.let {
@@ -843,11 +844,11 @@ class DownloadTaskRepository(
             downloadMode = downloadMode,
             savePath = "",
             fileSize = 0,
-            namingConventionInfo = mNamingConventionInfo,
+            namingConventionInfoJson = NamingConventionCodec.encode(mNamingConventionInfo),
             qualityDescription = qualityDescription,
-            mediaContainer = when (downloadMode) {
-                DownloadMode.AUDIO_ONLY -> mediaContainerConfig.audioContainer
-                else -> mediaContainerConfig.videoContainer
+            mediaContainerExtension = when (downloadMode) {
+                DownloadMode.AUDIO_ONLY -> mediaContainerConfig.audioContainer.extension
+                else -> mediaContainerConfig.videoContainer.extension
             }
         ).let {
             val segmentId = downloadTaskDao.insertSegment(it)
