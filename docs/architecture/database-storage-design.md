@@ -7,7 +7,7 @@
 当前数据库由 `core:database` 模块中的 Room 3 定义提供，模块已经按 Kotlin Multiplatform 组织：
 
 - `src/commonMain`
-  - 放实体、DAO、migration、type converter、数据库定义
+  - 放实体、DAO、migration、数据库定义（不使用 type converter，见下文「非原生类型的持久化方式」）
 - `src/androidMain`
   - 放 Android 数据库 builder 和 Koin 注入
 - `src/iosMain`
@@ -402,27 +402,59 @@ DAO 没有简单直接暴露裸 `update`，而是包装了：
 
 而不是下载过程中的瞬时拆分细节。
 
-## 类型转换器设计
+## 非原生类型的持久化方式
 
-下载相关字段里有很多不是 SQLite 原生类型，因此用了多组 `TypeConverter`，例如：
+下载相关字段里有些不是 SQLite 原生类型。**本项目刻意不使用 `@TypeConverters`**，
+而是按下述三种方式处理。
 
-- `DownloadModeConverter`
-- `DownloadPlatformConverter`
-- `DownloadStateConverter`
-- `DownloadStageConverter`
-- `DownloadTaskNodeTypeConverter`
-- `DownloadTaskTypeConverter`
-- `MediaContainerConverter`
-- `NamingConventionConverter`
+> 原因（务必先读）：Room 3.0.x + KSP2 下，**凡是承载 `@TypeConverters` 的元素都会被
+> 报 `[MissingType]`**，导致 `:core:database:kspAndroidMain` 失败。该结论由最小实体对照
+> 实验得出（只加 enum 属性、只加 `@ColumnInfo` 均正常，只要加 `@TypeConverters` 就报错），
+> 并且把注解从实体移到 `@Database` 后错误只是从 5 条变成 1 条、报错元素随之变成数据库类，
+> 证实是注解承载元素被污染而非具体类型无法解析。
+>
+> 因此今后**不要**再给 entity / DAO / database 添加 `@TypeConverters`。
 
-其中最值得注意的是：
+### 1. enum 类型：依赖 Room 内置转换
 
-- `NamingConventionConverter`
-  - 负责把 `NamingConventionInfo` 序列化入库
-- `MediaContainerConverter`
-  - 负责把容器类型稳定持久化
+`DownloadMode`、`DownloadPlatform`、`DownloadState`、`DownloadStage`、
+`DownloadTaskNodeType`、`DownloadTaskType`、`LoginPlatform`、
+`ASSharedCookieEncoding` 等 enum 属性不需要任何 converter —— Room 内置
+enum <-> String 转换即可（以 enum 的 `name` 存入 TEXT 列）。
 
-这也是为什么实体层可以保持较强类型，而不是到处手写字符串。
+原先那批 converter 的实现本身就是 `enum.name <-> String`，所以删除它们后
+列类型与取值完全不变，历史数据可直接读取。
+
+### 2. `MediaContainer`（sealed interface）：列存 extension
+
+实体列直接存字符串：
+
+- 列名：`media_container`（未变）
+- 取值：`"m4a"` / `"mp3"` / `"mp4"` / `"mkv"`（即 `MediaContainer.extension`，未变）
+
+还原逻辑在 `MediaContainer.Companion.fromExtension()`；实体上通过
+`@get:Ignore` 的计算属性 `mediaContainer` 暴露模型对象，**对外 API 不变**。
+
+### 3. `NamingConventionInfo`（sealed class）：列存 JSON
+
+- 列名：`naming_convention_info`（未变）
+- 取值：JSON 字符串，结构由 `NamingConventionCodec` 定义
+  （键名与旧的 `NamingConventionConverter` 完全一致，历史数据可直接读取）
+
+编解码放在普通对象 `NamingConventionCodec`（`entity/download/NamingConventionCodec.kt`），
+实体上同样用 `@get:Ignore` 的计算属性 `namingConventionInfo` 暴露模型对象。
+
+### 实现注意
+
+这两个计算属性**没有 backing field**，`@Ignore` 的适用目标是
+function / field / constructor / getter，因此必须写成 `@get:Ignore`，
+直接写 `@Ignore` 会编译失败。
+
+好处是实体对外仍然保持强类型，调用方（`DownloadTaskRepository` 等）无需手写字符串；
+代价是实体构造参数使用 `mediaContainerExtension` / `namingConventionInfoJson`，
+而非模型对象。目前只有 `DownloadTaskRepository` 中构造 `DownloadSegment` 的两处需要
+写 `mediaContainerExtension = X.extension` 与
+`namingConventionInfoJson = NamingConventionCodec.encode(x)`。
 
 ## Migration 设计
 

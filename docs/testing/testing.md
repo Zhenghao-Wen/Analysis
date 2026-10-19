@@ -51,7 +51,7 @@ Lint：
 - 链接解析、BV/AV/EP/SS 输入识别、deep link 分发。
 - B 站 API response serializer、签名、token、cookie 处理。
 - 下载任务状态机、命名规则、字幕转换、失败恢复。
-- Room migration、converter、DAO 查询。
+- Room migration、DAO 查询（本仓库不使用 type converter，非原生类型编解码见 `docs/architecture/database-storage-design.md`）。
 - DataStore serializer 和默认值迁移。
 - ViewModel 中的 Flow 状态转换、分页、错误提示。
 - 隐私授权前后的统计开关行为。

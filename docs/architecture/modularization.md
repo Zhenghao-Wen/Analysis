@@ -26,7 +26,7 @@ BILIBILIAS 使用 Gradle 多 module。根 `settings.gradle.kts` 当前包含：
 | `:core:ui` | Compose 主题、公共 UI 组件、UI 工具 |
 | `:core:common` | 通用事件、BuildConfig 运行时桥接、工具类、基础异常、跨 module 公共类型 |
 | `:core:network` | Ktor client、API service、网络 model、网络插件、B 站签名/token 工具 |
-| `:core:database` | Room 3 database、DAO、entity、converter、schema |
+| `:core:database` | Room 3 database、DAO、entity、schema（不使用 `@TypeConverters`） |
 | `:core:datastore` | App/User 设置 DataStore source、Okio serializer 与 Koin 注入（`google_play.proto` 为历史遗留，代码中已无消费方） |
 | `:core:datastore-proto` | Wire protobuf schema、生成代码与兼容扩展 |
 | `:core:data` | repository、UI 可消费的 data model、数据源编排 |

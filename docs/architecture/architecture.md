@@ -65,7 +65,7 @@ BILIBILIAS 当前是一个以 `:app` 为 Android 入口、`:shared` 承载跨端
 数据层分为几类：
 
 - `core:network`：API service、网络 adapter、Ktor plugin、网络 model、签名和 token 工具。
-- `core:database`：Room 3 database、DAO、entity、converter、schema。
+- `core:database`：Room 3 database、DAO、entity、schema。该模块**不使用** `@TypeConverters`，非原生类型的处理方式见 `database-storage-design.md`。
 - `core:datastore` 与 `core:datastore-proto`：protobuf schema、serializer、DataStore source。
 - `core:data`：repository 和面向 UI 的 data model，向上屏蔽网络、本地库和设置源细节。
 

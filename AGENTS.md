@@ -28,7 +28,7 @@ BILIBILIAS 是第三方 B 站视频缓存工具，当前已停止公开发布 AP
 - 新增公共 UI 放 `core:ui`，新增跨层工具/事件放 `core:common`。
 - 新增 API service、网络 model、签名/token 相关代码放 `core:network`。
 - 新增 repository 或数据源编排放 `core:data`。
-- 新增 Room entity/DAO/converter/migration 放 `core:database`，并维护 schema。
+- 新增 Room entity/DAO/migration 放 `core:database`，并维护 schema。**不要使用 `@TypeConverters`**：Room 3.0.x + KSP2 下承载该注解的元素会被报 `[MissingType]` 导致构建失败；非原生类型请按 `docs/architecture/database-storage-design.md`「非原生类型的持久化方式」处理（enum 用内置转换，其余用「列存基础类型 + `@get:Ignore` 计算属性」）。
 - 新增 DataStore 字段先改 `core:datastore-proto` 的 proto，再改 serializer/source/repository/UI。
 - 下载链路改动要重点检查 `NewDownloadManager`、`DownloadExecutor`、`VideoInfoFetcher`、`FfmpegMerger`、`SubtitleDownloader`、`NamingConventionHandler` 及相关设置。
 - 不要让 Compose UI 直接访问 API service、DAO 或文件下载执行器；通过 ViewModel/repository 暴露状态和动作。
