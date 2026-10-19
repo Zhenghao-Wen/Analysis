@@ -580,7 +580,7 @@ private fun HomeContent(
             key = "package_source_verify"
         ) {
             PackageSourceVerifyDialog(
-                hasBuildCommitHash = buildCommitHash.isNotBlank(),
+                buildCommitHash = buildCommitHash,
                 onSubmit = { input -> vm.verifyBuildCommitHash(input) },
                 onVerified = {
                     // 记录「版本号+提交哈希」；升级或换提交构建后会再次要求校验
@@ -670,18 +670,23 @@ private fun PackageSourceWarningDialog(
  * 这样无论是拉取源码本地编译，还是私有仓库/CI 构建出的安装包，
  * 都能追溯到具体的源码仓库提交：只要从源码仓库找到对应提交即可比对。
  *
- * 容错策略：
- * - 忽略大小写、前后空格、可带 `#` 前缀，只比较前 7 位；
- * - 若构建产物中**没有**提交信息（例如源码压缩包编译、`.git` 缺失），
- *   则不阻塞用户，直接放行并明确提示无法校验，避免把人锁在门外。
+ * **严格模式（宁可锁死也不放行）**：
+ * 本项目面向开发者群体，因此不提供任何绕过路径。
+ * - 输入容错：忽略大小写、前后空格、可带 `#` 前缀，只比较前 7 位；
+ * - 若构建产物中**没有**提交信息（源码压缩包编译、`.git` 缺失等），
+ *   则校验无法完成，**直接锁定**：输入框禁用、无「返回」按钮、无法继续，
+ *   并提示用户从源码仓库 `git clone` 后重新编译；
+ * - 两个按钮均无绕过入口，`clickBlankDismiss = false` 同时挡住点击空白与返回键
+ *   （Material3 的 AlertDialog 中返回键同样走 `onDismissRequest`）。
  */
 @Composable
 private fun PackageSourceVerifyDialog(
-    hasBuildCommitHash: Boolean,
+    buildCommitHash: String,
     onSubmit: (String) -> Boolean,
     onVerified: () -> Unit,
     onBack: () -> Unit,
 ) {
+    val hasBuildCommitHash = buildCommitHash.isNotBlank()
     var input by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -691,71 +696,91 @@ private fun PackageSourceVerifyDialog(
         title = { Text("验证安装包来源") },
         text = {
             Column(Modifier.fillMaxWidth()) {
-                Text(
-                    "为防止安装包被篡改，请输入本安装包对应源码提交的 7 位哈希值。"
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "获取方式：在源码仓库的提交记录中查看当前版本对应的提交，只取前七位；" +
-                        "若为自行编译，可执行 git rev-parse --short=7 HEAD。",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (!hasBuildCommitHash) {
+                if (hasBuildCommitHash) {
+                    Text(
+                        "为防止安装包被篡改，请输入本安装包对应源码提交的 7 位哈希值。"
+                    )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "注意：当前安装包未包含构建期提交信息，无法完成校验，将直接放行。",
+                        "获取方式：在源码仓库的提交记录中查看当前版本对应的提交，只取前七位；" +
+                            "若为自行编译，可执行 git rev-parse --short=7 HEAD。",
                         style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = input,
+                        onValueChange = {
+                            input = it
+                            errorMessage = null
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        isError = errorMessage != null,
+                        label = { Text("提交哈希（7 位）") },
+                        placeholder = { Text("例如 1a2b3c4") },
+                    )
+                    errorMessage?.let { message ->
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                } else {
+                    // 严格模式：没有构建期提交信息 → 无法验证 → 锁定，不放行
+                    Text(
+                        text = "当前安装包不包含构建期提交信息，无法验证来源，因此不能进入应用。",
                         color = MaterialTheme.colorScheme.error
                     )
-                }
-                Spacer(Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = input,
-                    onValueChange = {
-                        input = it
-                        errorMessage = null
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = hasBuildCommitHash,
-                    isError = errorMessage != null,
-                    label = { Text("提交哈希（7 位）") },
-                    placeholder = { Text("例如 1a2b3c4") },
-                )
-                errorMessage?.let { message ->
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "可能原因：使用源码压缩包编译，或编译环境缺少 .git 目录，" +
+                            "导致打包时拿不到提交哈希。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        text = message,
+                        text = "解决方式：从源码仓库 git clone 完整仓库后重新编译安装。",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         },
         confirmButton = {
-            ASTextButton(
-                onClick = {
-                    when {
-                        // 没有构建期信息时无法校验，直接放行（已在界面上说明）
-                        !hasBuildCommitHash -> onVerified()
-                        onSubmit(input) -> onVerified()
-                        else -> errorMessage = "哈希不匹配。请确认安装包来源与源码提交是否一致。"
+            if (hasBuildCommitHash) {
+                ASTextButton(
+                    onClick = {
+                        if (onSubmit(input)) {
+                            onVerified()
+                        } else {
+                            errorMessage = "哈希不匹配。请确认安装包来源与源码提交是否一致。"
+                        }
                     }
+                ) {
+                    Text(text = "验证")
                 }
-            ) {
-                Text(text = "验证")
+            } else {
+                // 无可用校验值：按钮禁用，且不提供返回/跳过入口
+                ASTextButton(onClick = {}, enabled = false) {
+                    Text(text = "无法继续")
+                }
             }
         },
-        dismissButton = {
-            ASTextButton(onClick = onBack) {
-                Text(text = "返回")
+        dismissButton = if (hasBuildCommitHash) {
+            {
+                ASTextButton(onClick = onBack) {
+                    Text(text = "返回")
+                }
             }
+        } else {
+            null
         },
     )
 }
-
-@Composable
 fun UpdateAppDialog(
     appUpdateInfo: AppUpdateConfigInfo?,
     shownAppUpdate: Boolean,
