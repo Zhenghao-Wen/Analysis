@@ -14,8 +14,12 @@ fun Project.optionalStringProperty(name: String): String = findProperty(name)?.t
 val baiduStatId: String = project.optionalStringProperty("as.baidu.stat.id")
 val githubOrg: String = project.optionalStringProperty("as.github.org")
 val githubRepository: String = project.optionalStringProperty("as.github.repository")
+// 打包时写入的源码提交哈希，固定取 7 位。
+// 用途：安装包来源校验（用户在「我已知晓」之后必须输入正确的 7 位提交哈希才能进入应用），
+// 以及首页「当前构建」标识。使用 --short=7 而不是 --short，避免在大型仓库中
+// git 为了消歧返回更长的前缀，导致「只取前七位」的校验规则与产物不一致。
 val gitCommitHash: String = providers.exec {
-    commandLine("git", "rev-parse", "--short", "HEAD")
+    commandLine("git", "rev-parse", "--short=7", "HEAD")
 }.standardOutput.asText.get().trim()
 val isDebugBuild = gradle.startParameter.taskNames.any { taskName ->
     taskName.contains("debug", ignoreCase = true)

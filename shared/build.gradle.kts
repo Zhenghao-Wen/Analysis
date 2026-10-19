@@ -86,8 +86,9 @@ buildConfig {
     val baiduStatId: String = project.optionalStringProperty("as.baidu.stat.id")
     val githubOrg: String = project.optionalStringProperty("as.github.org")
     val githubRepository: String = project.optionalStringProperty("as.github.repository")
+    // 与 app 模块保持一致：固定 7 位，供安装包来源校验使用（详见 README「安装包来源校验」）。
     val gitCommitHash: String = providers.exec {
-        commandLine("git", "rev-parse", "--short", "HEAD")
+        commandLine("git", "rev-parse", "--short=7", "HEAD")
     }.standardOutput.asText.get().trim()
 
     buildConfigField("String", "BAIDU_STAT_ID", """"$baiduStatId"""".trimIndent())

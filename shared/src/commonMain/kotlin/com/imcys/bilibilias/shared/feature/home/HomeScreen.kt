@@ -42,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -348,6 +349,11 @@ private fun HomeContent(
     var bulletinDialogShow by remember { mutableStateOf(false) }
     var unknownAppSign by remember { mutableStateOf(false) }
     var packageSourceWarningDialogShow by remember { mutableStateOf(false) }
+
+    // 安装包来源校验：点击「我已知晓」后进入，必须输入与打包时一致的 7 位提交哈希。
+    // 通过后才会记录「当前构建已确认」；否则每次启动都会重新要求校验。
+    var packageSourceVerifyDialogShow by remember { mutableStateOf(false) }
+    val buildCommitHash = remember { vm.buildCommitHash() }
     val shouldShowUnknownAppSignWarning =
         remember(unknownAppSign, appSettings.unknownAppSignWarningCloseTime) {
             val oneMonthAgo =
@@ -553,27 +559,44 @@ private fun HomeContent(
 
 
     DialogSortHost {
+        // 安装包来源提示 → 「我已知晓」→ 提交哈希校验，两步都不可点击空白关闭。
+        // DialogSortHost 只会渲染 order 最小的可见对话框，因此两者的 visible 互斥。
         dialog(
-            visible = packageSourceWarningDialogShow,
+            visible = packageSourceWarningDialogShow && !packageSourceVerifyDialogShow,
             order = 0,
             key = "package_source_warning"
         ) {
             PackageSourceWarningDialog(
                 onClickConfirm = {
-                    packageSourceWarningDialogShow = false
-                },
-                onClickSkipCurrentBuild = {
-                    vm.skipPackageSourceWarningForCurrentBuild()
-                    packageSourceWarningDialogShow = false
-                },
-                onDismiss = {
-                    packageSourceWarningDialogShow = false
+                    // 强化点：确认不再是终点，而是进入校验
+                    packageSourceVerifyDialogShow = true
                 }
             )
         }
 
         dialog(
-            visible = !packageSourceWarningDialogShow,
+            visible = packageSourceVerifyDialogShow,
+            order = -1,
+            key = "package_source_verify"
+        ) {
+            PackageSourceVerifyDialog(
+                hasBuildCommitHash = buildCommitHash.isNotBlank(),
+                onSubmit = { input -> vm.verifyBuildCommitHash(input) },
+                onVerified = {
+                    // 记录「版本号+提交哈希」；升级或换提交构建后会再次要求校验
+                    vm.markPackageSourceVerifiedForCurrentBuild()
+                    packageSourceVerifyDialogShow = false
+                    packageSourceWarningDialogShow = false
+                },
+                onBack = {
+                    packageSourceVerifyDialogShow = false
+                    packageSourceWarningDialogShow = true
+                }
+            )
+        }
+
+        dialog(
+            visible = !packageSourceWarningDialogShow && !packageSourceVerifyDialogShow,
             order = 1,
             key = "update_app"
         ) {
@@ -583,7 +606,7 @@ private fun HomeContent(
         }
 
         dialog(
-            visible = !packageSourceWarningDialogShow && closeBulletinDialogShow,
+            visible = !packageSourceWarningDialogShow && !packageSourceVerifyDialogShow && closeBulletinDialogShow,
             order = 2,
             key = "close_bulletin"
         ) {
@@ -595,7 +618,7 @@ private fun HomeContent(
         }
 
         dialog(
-            visible = !packageSourceWarningDialogShow && bulletinDialogShow,
+            visible = !packageSourceWarningDialogShow && !packageSourceVerifyDialogShow && bulletinDialogShow,
             order = 3,
             key = "bulletin"
         ) {
@@ -606,15 +629,23 @@ private fun HomeContent(
     }
 }
 
+/**
+ * 安装包来源提示（第一步）。
+ *
+ * 相比旧版的分支：
+ * - 主按钮文案改为「我已知晓」，且点击后**不是**关闭流程，而是进入第二步的提交哈希校验；
+ * - 去掉了「此版本不再提示」按钮 —— 它会绕过校验，让来源校验形同虚设；
+ * - `clickBlankDismiss = false`，避免点击空白直接跳过。
+ *
+ * 之所以保留这一步：它承担合规与风险提示的告知作用，用户必须显式确认后才能进入校验。
+ */
 @Composable
 private fun PackageSourceWarningDialog(
     onClickConfirm: () -> Unit,
-    onClickSkipCurrentBuild: () -> Unit,
-    onDismiss: () -> Unit
 ) {
     ASAlertDialog(
         showState = true,
-        clickBlankDismiss = true,
+        clickBlankDismiss = false,
         title = { Text("注意") },
         text = {
             Text(
@@ -623,15 +654,104 @@ private fun PackageSourceWarningDialog(
         },
         confirmButton = {
             ASTextButton(onClick = onClickConfirm) {
-                Text(text = "确定")
+                Text(text = "我已知晓")
+            }
+        },
+    )
+}
+
+/**
+ * 安装包来源校验（第二步，沿袭全局 MD3 主题）。
+ *
+ * 要求用户输入**本安装包对应源码提交的 7 位哈希**，与打包时通过
+ * `git rev-parse --short=7 HEAD` 写入 `ASBuildConfig.GIT_COMMIT_HASH` 的值比对，
+ * 一致才允许进入应用。
+ *
+ * 这样无论是拉取源码本地编译，还是私有仓库/CI 构建出的安装包，
+ * 都能追溯到具体的源码仓库提交：只要从源码仓库找到对应提交即可比对。
+ *
+ * 容错策略：
+ * - 忽略大小写、前后空格、可带 `#` 前缀，只比较前 7 位；
+ * - 若构建产物中**没有**提交信息（例如源码压缩包编译、`.git` 缺失），
+ *   则不阻塞用户，直接放行并明确提示无法校验，避免把人锁在门外。
+ */
+@Composable
+private fun PackageSourceVerifyDialog(
+    hasBuildCommitHash: Boolean,
+    onSubmit: (String) -> Boolean,
+    onVerified: () -> Unit,
+    onBack: () -> Unit,
+) {
+    var input by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    ASAlertDialog(
+        showState = true,
+        clickBlankDismiss = false,
+        title = { Text("验证安装包来源") },
+        text = {
+            Column(Modifier.fillMaxWidth()) {
+                Text(
+                    "为防止安装包被篡改，请输入本安装包对应源码提交的 7 位哈希值。"
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "获取方式：在源码仓库的提交记录中查看当前版本对应的提交，只取前七位；" +
+                        "若为自行编译，可执行 git rev-parse --short=7 HEAD。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (!hasBuildCommitHash) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "注意：当前安装包未包含构建期提交信息，无法完成校验，将直接放行。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = {
+                        input = it
+                        errorMessage = null
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    enabled = hasBuildCommitHash,
+                    isError = errorMessage != null,
+                    label = { Text("提交哈希（7 位）") },
+                    placeholder = { Text("例如 1a2b3c4") },
+                )
+                errorMessage?.let { message ->
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            ASTextButton(
+                onClick = {
+                    when {
+                        // 没有构建期信息时无法校验，直接放行（已在界面上说明）
+                        !hasBuildCommitHash -> onVerified()
+                        onSubmit(input) -> onVerified()
+                        else -> errorMessage = "哈希不匹配。请确认安装包来源与源码提交是否一致。"
+                    }
+                }
+            ) {
+                Text(text = "验证")
             }
         },
         dismissButton = {
-            ASTextButton(onClick = onClickSkipCurrentBuild) {
-                Text(text = "此版本不再提示")
+            ASTextButton(onClick = onBack) {
+                Text(text = "返回")
             }
         },
-        onDismiss = onDismiss
     )
 }
 

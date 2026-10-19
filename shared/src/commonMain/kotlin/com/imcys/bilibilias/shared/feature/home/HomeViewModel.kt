@@ -22,6 +22,7 @@ import com.imcys.bilibilias.network.model.app.BannerConfigInfo
 import com.imcys.bilibilias.network.model.app.BulletinConfigInfo
 import com.imcys.bilibilias.network.service.AppAPIService
 import com.imcys.bilibilias.shared.platform.runtime.getAppVersion
+import bilibilias.shared.ASBuildConfig
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -130,7 +131,35 @@ class HomeViewModel(
     }
 
     fun getPackageSourceWarningKey(): String {
-        return "${getAppVersion().second}+${CommonBuildConfig.gitCommitHash}"
+        return "${getAppVersion().second}+${buildCommitHash()}"
+    }
+
+    /**
+     * 打包时写入的源码提交哈希（7 位，小写）。
+     *
+     * 来源是构建期的 `git rev-parse --short=7 HEAD`，见 app / shared 的 build.gradle.kts。
+     * 优先用 `ASBuildConfig`（编译期常量，随构建产物固化，不依赖初始化顺序），
+     * 为空时回退到 `CommonBuildConfig`（由 Application.onCreate 写入）。
+     *
+     * 之所以只用前 7 位：让用户从源码仓库的提交列表里就能直接比对，无需读完整 40 位。
+     */
+    fun buildCommitHash(): String {
+        val fromBuildConfig = ASBuildConfig.GIT_COMMIT_HASH
+        val raw = fromBuildConfig.ifBlank { CommonBuildConfig.gitCommitHash }
+        return raw.trim().lowercase().take(7)
+    }
+
+    /**
+     * 校验用户输入的提交哈希是否与本安装包一致。
+     *
+     * 容错：允许带 `#` 前缀、带前后空格、任意大小写；只取前 7 位比较。
+     */
+    fun verifyBuildCommitHash(input: String): Boolean {
+        val expected = buildCommitHash()
+        if (expected.isBlank()) return false
+        val normalized = input.trim().removePrefix("#").trim().lowercase()
+        if (normalized.length < 7) return false
+        return normalized.take(7) == expected
     }
 
     fun markPackageSourceWarningShownThisLaunch() {
@@ -138,7 +167,13 @@ class HomeViewModel(
         _uiState.value = uiState.value.copy(shownPackageSourceWarningThisLaunch = true)
     }
 
-    fun skipPackageSourceWarningForCurrentBuild() {
+    /**
+     * 校验通过后记录「当前构建已确认来源」。
+     *
+     * 存的是 `版本号+提交哈希`，所以升级版本或换成另一个提交构建的包后，
+     * 该值会变化 → 下次启动仍会重新要求校验（符合「更新后首次使用新版本」的要求）。
+     */
+    fun markPackageSourceVerifiedForCurrentBuild() {
         viewModelScope.launch(Dispatchers.IO) {
             appSettingsRepository.updatePackageSourceWarningSkipKey(getPackageSourceWarningKey())
         }
