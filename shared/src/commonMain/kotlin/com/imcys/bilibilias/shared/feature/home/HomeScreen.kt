@@ -781,6 +781,8 @@ private fun PackageSourceVerifyDialog(
         },
     )
 }
+
+@Composable
 fun UpdateAppDialog(
     appUpdateInfo: AppUpdateConfigInfo?,
     shownAppUpdate: Boolean,
