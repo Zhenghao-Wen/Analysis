@@ -46,6 +46,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
+import bilibilias.shared.ASBuildConfig
 import bilibilias.shared.generated.resources.Res
 import bilibilias.shared.generated.resources.common_cancel
 import bilibilias.shared.generated.resources.ic_github_24px
@@ -64,6 +65,7 @@ import com.imcys.bilibilias.datastore.enabledNavOnBackInvokedCallback
 import com.imcys.bilibilias.datastore.getDefaultInstance
 import com.imcys.bilibilias.network.ApiStatus
 import com.imcys.bilibilias.shared.platform.firebase.FirebaseExt
+import com.imcys.bilibilias.shared.platform.runtime.getAndroidApiLevel
 import com.imcys.bilibilias.shared.platform.runtime.openLink
 import com.imcys.bilibilias.shared.platform.permission.rememberNotificationPermissionController
 import com.imcys.bilibilias.shared.app.PrivacyPolicyDialog
@@ -127,6 +129,8 @@ fun SettingScreen(
     var showLogoutLoading by remember { mutableStateOf(false) }
     var showPrivacyPolicy by remember { mutableStateOf(false) }
     var showPrivacyPolicyRefuseTip by remember { mutableStateOf(false) }
+    // 当前系统 API Level：用于把依赖新系统能力的分支置灰（非 Android 平台为 0）
+    val apiLevel = remember { getAndroidApiLevel() }
 
     SettingScaffold(scrollBehavior, onToBack) {
         LazyColumn(
@@ -171,11 +175,19 @@ fun SettingScreen(
             }
 
             item {
+                // 动态取色（Material You）从 Android 12 / API 31 起才由系统提供，
+                // 低版本系统没有对应能力，故置灰并说明。
+                val dynamicColorSupported = apiLevel >= 31
                 SwitchSettingsItem(
                     imageVector = Icons.Outlined.Palette,
                     text = "动态主题",
-                    description = "使用桌面壁纸颜色作为主题",
+                    description = if (dynamicColorSupported) {
+                        "使用桌面壁纸颜色作为主题"
+                    } else {
+                        "使用桌面壁纸颜色作为主题（需要 Android 12 / API 31 及以上，当前设备不支持）"
+                    },
                     checked = appSettings.enabledDynamicColor,
+                    enabled = dynamicColorSupported,
                 ) { check ->
                     haptics.switchHapticFeedback(check)
                     vm.updateEnabledDynamicColor(check)
@@ -183,10 +195,18 @@ fun SettingScreen(
             }
 
             item {
+                // 预测性返回动画对用户可见是从 Android 14 / API 34 开始
+                // （API 33 只有回调，不展示预测动画），因此 33 及以下一律置灰。
+                val predictiveBackSupported = apiLevel >= 34
                 SwitchSettingsItem(
-                    enabled = appSettings.enabledNavAnimation,
+                    enabled = predictiveBackSupported && appSettings.enabledNavAnimation,
                     imageVector = Icons.Outlined.Gesture,
                     text = "预测性返回手势",
+                    description = if (predictiveBackSupported) {
+                        "使用系统预测性返回动画（Android 14 / API 34 及以上）"
+                    } else {
+                        "需要 Android 14 / API 34 及以上，当前设备不支持"
+                    },
                     checked = appSettings.enabledNavOnBackInvokedCallback,
                 ) { check ->
                     haptics.switchHapticFeedback(check)
@@ -236,10 +256,13 @@ fun SettingScreen(
             }
 
             item {
+                // 漫游服务依赖旧版自建后端（AppAPIService / api.misakamoe.com），
+                // 该后端已整体停用，故此处标记为已关停并禁用入口。
                 BaseSettingsItem(
                     painter = rememberVectorPainter(Icons.AutoMirrored.Outlined.AirplaneTicket),
                     text = "漫游服务",
-                    descriptionText = "可使视频解析流量出国",
+                    descriptionText = "已关停",
+                    enabled = false,
                     onClick = onToRoam
                 )
             }
@@ -274,20 +297,25 @@ fun SettingScreen(
                     painter = rememberVectorPainter(Icons.Outlined.Update),
                     text = "版本追踪",
                     description = {
+                        // 字号必须与同级条目（如「关于」的 descriptionText）一致：
+                        // BaseSettingsItem 的 descriptionText 用 bodyMedium，
+                        // 这里若不给 style 会回落到默认的 bodyLarge，显得大一号。
+                        val descriptionStyle = MaterialTheme.typography.bodyMedium
                         when (lastGitCommitInfo.status) {
                             ApiStatus.SUCCESS -> {
                                 Text(
                                     "${lastGitCommitInfo.data?.tipMsg}",
+                                    style = descriptionStyle,
                                     maxLines = 2
                                 )
                             }
 
                             ApiStatus.ERROR -> {
-                                Text("无法获取版本信息")
+                                Text("无法获取版本信息", style = descriptionStyle)
                             }
 
                             else -> {
-                                Text("正在获取版本信息")
+                                Text("正在获取版本信息", style = descriptionStyle)
                             }
                         }
                     },
@@ -298,12 +326,21 @@ fun SettingScreen(
             }
 
             item {
+                // 仓库地址与文案都取自构建配置（gradle.properties 的
+                // as.github.org / as.github.repository），避免与真实仓库漂移。
+                val repoOrg = ASBuildConfig.GITHUB_ORG
+                val repoName = ASBuildConfig.GITHUB_REPOSITORY
+                val repoPath = if (repoOrg.isBlank()) {
+                    repoName
+                } else {
+                    "$repoOrg/$repoName"
+                }
                 BaseSettingsItem(
                     painter = painterResource(Res.drawable.ic_github_24px),
                     text = "Github仓库",
-                    description = {},
+                    descriptionText = if (repoPath.isBlank()) "未配置仓库信息" else repoPath,
                     onClick = {
-                        openLink("https://github.com/Zhenghao-Wen/Analysis")
+                        openLink("https://github.com/$repoPath")
                     }
                 )
             }

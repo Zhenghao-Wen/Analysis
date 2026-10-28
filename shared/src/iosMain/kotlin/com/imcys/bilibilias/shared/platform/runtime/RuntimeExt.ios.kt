@@ -91,6 +91,13 @@ actual fun getAppVersion(): Pair<Long, String> {
     return (code.toLongOrNull() ?: 1L) to name
 }
 
+/**
+ * iOS 没有 Android API Level 的概念，返回 0 表示「不适用」，
+ * 依赖该值的设置项（动态主题、预测性返回等）会保持置灰。
+ */
+actual fun getAndroidApiLevel(): Int = 0
+
+
 actual fun urlEncode(url: String): String {
     return (url as NSString).stringByAddingPercentEncodingWithAllowedCharacters(
         NSCharacterSet.URLQueryAllowedCharacterSet()

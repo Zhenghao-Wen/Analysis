@@ -87,6 +87,12 @@ actual fun getAppVersion(): Pair<Long, String> {
     return code to name
 }
 
+/**
+ * Android 侧直接返回 `Build.VERSION.SDK_INT`，用于设置页按系统版本置灰能力项。
+ */
+actual fun getAndroidApiLevel(): Int = Build.VERSION.SDK_INT
+
+
 actual fun urlEncode(url: String): String {
     return URLEncoder.encode(url, "UTF-8")
 }
