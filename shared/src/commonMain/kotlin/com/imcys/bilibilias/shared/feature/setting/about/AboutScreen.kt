@@ -98,6 +98,10 @@ fun AboutContent(
             Spacer(Modifier.height(10.dp))
             TitleArea()
         }
+        item {
+            Spacer(Modifier.height(10.dp))
+            MaintainerArea()
+        }
         /* 本项目已停止分发，除 Analysis 仓库外没有官方群组，故注释掉该联系方式入口
         item {
             Spacer(Modifier.height(10.dp))
@@ -194,6 +198,46 @@ fun TitleArea(
                         
                         BILIBILIAS 自作者高中时期开始开发，至今已有数年时间，在此期间，作者不断学习和探索新的技术，至今已迭代到第三个重构版本。
                         非常感谢在这期间，所有给予我们反馈和帮助的用户和朋友们。
+                    """.trimIndent(),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 维护者说明：原作者已放弃项目，当前由本仓库（fork 仓库 Analysis）的维护者接手。
+ */
+@Composable
+fun MaintainerArea(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxWidth(1f),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Card {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "关于本仓库",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+                Text(
+                    text = """
+                        原作者 imcys 已经放弃维护本项目。
+                        
+                        当前项目由继任维护者接手，其本人现在也只是一名中学生，
+                        只能在课余时间维护，因此更新会较慢，也请理解能力有限之处。
+                        
+                        非常感谢原作者 imcys 打下的良好代码基础——这个项目能走到今天，
+                        离不开原有清晰的架构与长期的积累。
+                        
+                        请注意区分：本仓库是 fork 仓库 Analysis，并非原作者的原始仓库；
+                        两者的维护状态与立场均不相同，请勿混为一谈。
+                        后续更新与说明均以本仓库为准。
                     """.trimIndent(),
                 )
             }
