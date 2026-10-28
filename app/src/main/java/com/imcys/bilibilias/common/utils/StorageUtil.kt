@@ -29,6 +29,12 @@ data class StorageInfoData(
     val cacheTotalBytes: Long
 )
 
+/** SAF 目录统计的深度上限，避免误授权存储根目录时长时间遍历。 */
+private const val SAF_SCAN_MAX_DEPTH = 6
+
+/** 单个目录下的条目上限。 */
+private const val SAF_SCAN_MAX_ENTRIES_PER_DIR = 3000
+
 object StorageUtil: KoinComponent {
 
     private val appSettingsStore: DataStore<AppSettings> by inject(
@@ -64,12 +70,20 @@ object StorageUtil: KoinComponent {
         return size
     }
 
-    // 递归统计DocumentFile大小
-    private fun getDocumentFileSize(docFile: DocumentFile?): Long {
+    // 递归统计 DocumentFile 大小
+    // 加深度与条目上限：若用户把整个存储根目录授权给应用，无界递归会遍历全部文件，
+    // 表现为界面长时间卡在「加载中」。
+    private fun getDocumentFileSize(docFile: DocumentFile?, depth: Int = 0): Long {
         if (docFile == null || !docFile.exists()) return 0L
         if (docFile.isFile) return docFile.length()
+        if (depth > SAF_SCAN_MAX_DEPTH) return 0L
         var size = 0L
-        docFile.listFiles().forEach { size += getDocumentFileSize(it) }
+        var visited = 0
+        docFile.listFiles().forEach {
+            visited++
+            if (visited > SAF_SCAN_MAX_ENTRIES_PER_DIR) return size
+            size += getDocumentFileSize(it, depth + 1)
+        }
         return size
     }
 

@@ -3,6 +3,7 @@ package com.imcys.bilibilias.shared.platform.permission
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.ChecksSdkIntAtLeast
@@ -62,7 +63,15 @@ actual fun rememberDownloadDirectoryPermissionController(
                 get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
             override fun request() {
-                launcher.launch("content://com.android.externalstorage.documents/root/primary".toUri())
+                // 默认定位到 Download/BILIBILIAS，而不是存储根目录：
+                // 授权到 /sdcard 根目录既无意义，也会让占用统计遍历整块存储。
+                val initialUri = runCatching {
+                    DocumentsContract.buildDocumentUri(
+                        "com.android.externalstorage.documents",
+                        "primary:Download/BILIBILIAS"
+                    )
+                }.getOrNull()
+                launcher.launch(initialUri ?: "content://com.android.externalstorage.documents/root/primary".toUri())
             }
         }
     }

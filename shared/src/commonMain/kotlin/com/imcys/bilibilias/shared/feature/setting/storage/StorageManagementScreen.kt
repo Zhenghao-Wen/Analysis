@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import com.imcys.bilibilias.ui.component.ASTextButton
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -109,7 +112,27 @@ fun StorageManagementContent(
 
 
     when (val state = uiState) {
-        is StorageManagementViewModel.StorageManagementUIState.Error -> {}
+        is StorageManagementViewModel.StorageManagementUIState.Error -> {
+            // 之前这里是空实现，出错时会显示为一片空白；改为可重试的错误提示。
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = state.errorMsg,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(Modifier.height(12.dp))
+                ASTextButton(onClick = { vm.loadStorageInfo() }) {
+                    Text("重新统计")
+                }
+            }
+        }
+
         StorageManagementViewModel.StorageManagementUIState.Loading -> {
             ASCommonLoadingScreen()
         }

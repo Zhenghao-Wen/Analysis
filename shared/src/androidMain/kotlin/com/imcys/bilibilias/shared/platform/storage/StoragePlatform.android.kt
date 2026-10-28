@@ -15,11 +15,19 @@ import com.imcys.bilibilias.shared.util.StorageInfoData
 import com.imcys.bilibilias.data.repository.AppSettingsRepository
 import com.imcys.bilibilias.datastore.downloadUri
 import com.imcys.bilibilias.shared.platform.runtime.koinApplication
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import org.koin.mp.KoinPlatform.getKoin
 import java.io.File
 import java.util.UUID
 import kotlin.system.exitProcess
+
+/** SAF 体积扫描的深度上限，防止误授权存储根目录时长时间卡死。 */
+private const val SAF_SCAN_MAX_DEPTH = 6
+
+/** SAF 体积扫描的条目上限。 */
+private const val SAF_SCAN_MAX_ENTRIES = 3000
 
 actual object StoragePlatform {
     private val appSettingsRepository: AppSettingsRepository
@@ -139,12 +147,54 @@ actual object StoragePlatform {
         return size
     }
 
-    private fun getDocumentFileSize(docFile: DocumentFile?): Long {
-        if (docFile == null || !docFile.exists()) return 0L
-        if (docFile.isFile) return docFile.length()
+    /**
+     * 统计 SAF 目录占用。
+     *
+     * 必须设上限：用户可能把**整个存储根目录**（如 /sdcard）授权给应用，
+     * 此时无界递归会遍历所有文件，表现就是设置页一直卡在「加载中」。
+     * 这里限制深度与条目数，并在遍历中响应协程取消。
+     */
+    private suspend fun getDocumentFileSizeBounded(root: DocumentFile?): Long {
+        if (root == null || !root.exists()) return 0L
+        if (root.isFile) return root.length()
+
         var size = 0L
-        docFile.listFiles().forEach { size += getDocumentFileSize(it) }
+        var visited = 0
+        val queue = ArrayDeque<Pair<DocumentFile, Int>>()
+        queue.addLast(root to 0)
+
+        while (queue.isNotEmpty()) {
+            currentCoroutineContext().ensureActive()
+            val (dir, depth) = queue.removeFirst()
+            if (depth > SAF_SCAN_MAX_DEPTH) continue
+            val children = runCatching { dir.listFiles() }.getOrNull() ?: continue
+            for (child in children) {
+                visited++
+                if (visited > SAF_SCAN_MAX_ENTRIES) {
+                    // 达到上限就停下，宁可给出偏小的数字，也不让界面卡死
+                    return size
+                }
+                if (child.isFile) {
+                    size += runCatching { child.length() }.getOrDefault(0L)
+                } else {
+                    queue.addLast(child to depth + 1)
+                }
+            }
+        }
         return size
+    }
+
+    /**
+     * 授权的树是否是「某个存储卷的根目录」。
+     *
+     * `getTreeDocumentId` 对根目录返回形如 `primary:` 的 id，
+     * 对子目录返回 `primary:Download/BILIBILIAS`。
+     */
+    private fun isStorageRootTree(uriString: String): Boolean {
+        return runCatching {
+            val treeId = DocumentsContract.getTreeDocumentId(uriString.toUri())
+            treeId.endsWith(":")
+        }.getOrDefault(false)
     }
 
     private fun getDownloadUsedBytes(): Long {
@@ -169,9 +219,13 @@ actual object StoragePlatform {
         }
         val uriString = appSettingsRepository.appSettingsFlow.first().downloadUri
         if (uriString.isNotEmpty()) {
-            val docFile = DocumentFile.fromTreeUri(koinApplication, uriString.toUri())
-            if (docFile != null && docFile.exists() && docFile.isDirectory) {
-                return getDocumentFileSize(docFile)
+            // 授权到存储根目录时不统计：一是无意义（统计的是整块存储），
+            // 二是遍历代价极大。此时回退到应用自己的下载目录。
+            if (!isStorageRootTree(uriString)) {
+                val docFile = DocumentFile.fromTreeUri(koinApplication, uriString.toUri())
+                if (docFile != null && docFile.exists() && docFile.isDirectory) {
+                    return getDocumentFileSizeBounded(docFile)
+                }
             }
         }
         return getDownloadUsedBytes()

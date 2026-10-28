@@ -10,6 +10,10 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+
+/** 存储信息统计的超时时间，避免 SAF 遍历过慢时界面卡死。 */
+private const val STORAGE_INFO_TIMEOUT_MS = 10_000L
 
 class StorageManagementViewModel(
     private val appSettingsRepository: AppSettingsRepository
@@ -32,18 +36,26 @@ class StorageManagementViewModel(
 
     fun loadStorageInfo() {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val storageInfoData = StoragePlatform.getStorageInfoData()
-                val hasDownloadSAFPermission = StoragePlatform.hasDownloadSAFPermission()
-                _uiState.emit(
-                    StorageManagementUIState.Success(
-                        storageInfoData,
-                        hasDownloadSAFPermission
-                    )
-                )
-            } catch (e: Exception) {
-                _uiState.emit(StorageManagementUIState.Error(e.message ?: "未知错误"))
+            // 统计本身可能很慢（SAF 目录遍历），加超时兜底：
+            // 超时后给出可重试的错误状态，避免界面永远停在「加载中」。
+            val storageInfoData = withTimeoutOrNull(STORAGE_INFO_TIMEOUT_MS) {
+                runCatching { StoragePlatform.getStorageInfoData() }.getOrNull()
             }
+            if (storageInfoData == null) {
+                _uiState.emit(
+                    StorageManagementUIState.Error("统计存储占用超时或被中断，请重试")
+                )
+                return@launch
+            }
+            val hasDownloadSAFPermission = runCatching {
+                StoragePlatform.hasDownloadSAFPermission()
+            }.getOrDefault(false)
+            _uiState.emit(
+                StorageManagementUIState.Success(
+                    storageInfoData,
+                    hasDownloadSAFPermission
+                )
+            )
         }
     }
 
@@ -51,10 +63,7 @@ class StorageManagementViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.value is StorageManagementUIState.Success) {
                 StoragePlatform.clearCache()
-                val storageInfoData = StoragePlatform.getStorageInfoData()
-                val hasDownloadSAFPermission = StoragePlatform.hasDownloadSAFPermission()
-                _uiState.value =
-                    StorageManagementUIState.Success(storageInfoData, hasDownloadSAFPermission)
+                loadStorageInfo()
             }
         }
     }
