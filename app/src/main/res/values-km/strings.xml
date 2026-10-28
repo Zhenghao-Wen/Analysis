@@ -2,8 +2,8 @@
     <!-- Common strings -->
     <string name="common_privacy_policy">គោលនយោបាយភាពឯកជន</string>
     <string name="app_privacy_policy_tip"><![CDATA[
-BILIBILIAS no longer relies on any third-party server. Video parsing, downloads, settings and login data stay on your device and are never uploaded to the developer's server.
-Tap "Agree" if you have read and accept this notice. Declining does not affect local features.
+BILIBILIAS no longer relies on any third-party server. Video parsing, downloads, settings and login data stay on your device and are never uploaded to any developer server.
+Tap Agree if you have read and accept this notice. Declining does not affect local features.
 ]]></string>
     <string name="common_agree">យល់ព្រម</string>
     <string name="common_refuse">បដិសេធ</string>
