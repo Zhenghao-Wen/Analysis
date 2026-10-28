@@ -665,16 +665,25 @@ private fun QRCodeContent(
                                         // 本地生成二维码：此前是把内容交给
                                         // pan.misakamoe.com 出图，现改为纯本地编码，
                                         // 不再把登录地址（含 qrcode_key）发给第三方。
+                                        // 定位眼跟随主题主色，数据点保持黑色以保证可扫性。
+                                        val eyeColor = MaterialTheme.colorScheme.primary
+                                        val qrOptions = remember(eyeColor) {
+                                            defaultQrOptions(eyeColor = eyeColor)
+                                        }
                                         val qrPainter = rememberQrCodePainter(
                                             data = qrContent,
-                                            options = defaultQrOptions(),
+                                            options = qrOptions,
                                         )
                                         Image(
                                             painter = qrPainter,
                                             contentDescription = stringResource(Res.string.cd_login_qrcode),
-                                            contentScale = ContentScale.FillWidth,
+                                            // 用 Fit 而不是 FillWidth：外层是圆角容器，
+                                            // 铺满会把二维码四角裁掉（实机上表现为四角被遮），
+                                            // 再配合内边距与静区留白。
+                                            contentScale = ContentScale.Fit,
                                             modifier = Modifier
                                                 .fillMaxSize()
+                                                .padding(10.dp)
                                                 .clickable {
                                                     updateQrCode()
                                                 })
