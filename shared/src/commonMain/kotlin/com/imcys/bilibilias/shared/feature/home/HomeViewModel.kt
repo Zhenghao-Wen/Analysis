@@ -7,6 +7,7 @@ import com.imcys.bilibilias.common.data.CommonBuildConfig
 import com.imcys.bilibilias.common.event.sendToastEvent
 import com.imcys.bilibilias.data.model.BILILoginUserModel
 import com.imcys.bilibilias.data.repository.AppSettingsRepository
+import com.imcys.bilibilias.data.repository.withoutRemovedHomeLayoutTypes
 import com.imcys.bilibilias.data.repository.QRCodeLoginRepository
 import com.imcys.bilibilias.data.repository.RiskManagementRepository
 import com.imcys.bilibilias.database.entity.BILIUsersEntity
@@ -27,6 +28,7 @@ import io.ktor.client.HttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -168,6 +170,24 @@ class HomeViewModel(
     }
 
     /**
+     * 是否需要弹出安装包来源校验。
+     *
+     * 语义：**每个构建只弹一次**——记录里保存「版本号 + 提交哈希」，
+     * 只有当它与当前安装包不一致（升级到新版本 / 换另一个提交构建）或为空（全新安装）
+     * 时才需要校验；同一构建校验通过后不再打扰。
+     *
+     * 这里**直接读一次持久化值**，而不是用界面里 `collectAsStateWithLifecycle` 的
+     * StateFlow：后者首帧是 `AppSettings.getDefaultInstance()`（skipKey 为空），
+     * 会被误判为「未校验」，导致每次启动都弹窗。
+     */
+    suspend fun needsPackageSourceVerification(): Boolean {
+        val savedKey = runCatching {
+            appSettingsRepository.appSettingsFlow.first().packageSourceWarningSkipKey
+        }.getOrDefault("")
+        return savedKey != getPackageSourceWarningKey()
+    }
+
+    /**
      * 校验通过后记录「当前构建已确认来源」。
      *
      * 存的是 `版本号+提交哈希`，所以升级版本或换成另一个提交构建的包后，
@@ -197,7 +217,10 @@ class HomeViewModel(
         viewModelScope.launch {
             appSettingsRepository.asyncHomeLayoutTypesetList()
             appSettings.collect {
-                _homeLayoutTypesetList.value = it.homeLayoutTypesetList
+                // 过滤已永久停用的布局项（轮播图 / 公告 / 旧版更新），
+                // 保证首页即使读到历史数据也不会渲染它们。
+                _homeLayoutTypesetList.value =
+                    it.homeLayoutTypesetList.withoutRemovedHomeLayoutTypes()
                 _useToolHistoryList.value = toToolInfoList(it.useToolHistoryList)
             }
 

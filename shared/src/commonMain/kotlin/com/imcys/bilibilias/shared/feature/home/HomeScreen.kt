@@ -380,11 +380,11 @@ private fun HomeContent(
 
     val packageSourceWarningKey = remember { vm.getPackageSourceWarningKey() }
 
-    LaunchedEffect(packageSourceWarningKey, appSettings.packageSourceWarningSkipKey) {
-        if (
-            !uiState.shownPackageSourceWarningThisLaunch &&
-            appSettings.packageSourceWarningSkipKey != packageSourceWarningKey
-        ) {
+    // 每个构建只弹一次：判定依据是「上次记录的版本号+提交哈希」与当前安装包是否一致。
+    // 必须直接读持久化值（见 needsPackageSourceVerification 注释），
+    // 不能用 appSettings 的 StateFlow 首帧判断，否则会每次启动都弹。
+    LaunchedEffect(packageSourceWarningKey) {
+        if (vm.needsPackageSourceVerification()) {
             packageSourceWarningDialogShow = true
             vm.markPackageSourceWarningShownThisLaunch()
         }
@@ -700,6 +700,22 @@ private fun PackageSourceVerifyDialog(
                     Text(
                         "为防止安装包被篡改，请输入本安装包对应源码提交的 7 位哈希值。"
                     )
+                    // 醒目的警告块：用 errorContainer 底色 + onErrorContainer 文字，
+                    // 字号与上文一致（bodyMedium），跟随全局 MD3 主题。
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = "如果你不知道要输入的东西有什么意义，或者这7位是别人告诉你的，那你应该放弃使用该应用。",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
                     Spacer(Modifier.height(8.dp))
                     Text(
                         "获取方式：在源码仓库的提交记录中查看当前版本对应的提交，只取前七位；" +

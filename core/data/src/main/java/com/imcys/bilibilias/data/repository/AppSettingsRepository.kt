@@ -89,20 +89,22 @@ class AppSettingsRepository(
         }
     }
 
-    /** 已停用第三方依赖的首页布局项，始终从布局列表中剔除。 */
-    private val removedHomeLayoutTypes = setOf(
-        AppSettings.HomeLayoutType.Banner,
-        AppSettings.HomeLayoutType.Announcement,
-        AppSettings.HomeLayoutType.UpdateInfo
-    )
+    // 首页布局项的过滤规则见文件末尾的 removedHomeLayoutTypes / withoutRemovedHomeLayoutTypes
 
     suspend fun asyncHomeLayoutTypesetList(): List<AppSettings.HomeLayoutItem> {
         val defaultList = createDefaultHomeLayoutItems()
         // 同时过滤历史数据：老用户的 DataStore 里可能仍存有 Banner /
         // Announcement / UpdateInfo，这里主动剔除，保证「始终完全禁用」。
-        val existingList = dataStore.data.first().homeLayoutTypesetList
-            .filterNot { it.type in removedHomeLayoutTypes }
-            .toMutableList()
+        val storedList = dataStore.data.first().homeLayoutTypesetList
+        val existingList = storedList.withoutRemovedHomeLayoutTypes().toMutableList()
+
+        // 若历史数据里确实含有已停用项，顺手把清理后的结果写回，避免每次读取都要过滤、
+        // 也防止其它直接读取 DataStore 的地方再把它们漏出来。
+        if (existingList.size != storedList.size) {
+            dataStore.updateData { currentSettings ->
+                currentSettings.copy(home_layout_typeset = existingList)
+            }
+        }
 
         return if (existingList.isEmpty()) {
             dataStore.updateData { currentSettings ->
@@ -112,8 +114,16 @@ class AppSettingsRepository(
         } else {
             val existingTypes = existingList.map { it.type }.toSet()
             val missingItems = defaultList.filterNot { it.type in existingTypes }
-            existingList.addAll(missingItems)
-            existingList
+            if (missingItems.isEmpty()) {
+                existingList
+            } else {
+                // 补齐缺失项后也要落盘，否则每次读取都会重新计算
+                existingList.addAll(missingItems)
+                dataStore.updateData { currentSettings ->
+                    currentSettings.copy(home_layout_typeset = existingList)
+                }
+                existingList
+            }
         }
     }
 
@@ -132,8 +142,10 @@ class AppSettingsRepository(
     }
 
     suspend fun updateHomeLayoutTypesetList(newList: List<AppSettings.HomeLayoutItem>) {
+        // 写入前同样过滤：即使调用方传入了已停用项，也不会落盘。
+        val filtered = newList.withoutRemovedHomeLayoutTypes()
         dataStore.updateData { currentSettings ->
-            currentSettings.copy(home_layout_typeset = newList)
+            currentSettings.copy(home_layout_typeset = filtered)
         }
     }
 
@@ -279,3 +291,20 @@ fun AppSettings.HomeLayoutType.getDescription(): String = when (this) {
     AppSettings.HomeLayoutType.Tools -> "工具列表"
     AppSettings.HomeLayoutType.DownloadList -> "下载列表"
 }
+
+
+/**
+ * 依赖第三方服务、已永久停用的首页布局项类型。
+ *
+ * 这三项的数据源是旧版自建后端（轮播图 / 公告 / 旧版更新信息），
+ * 后端已整体停用，因此它们在首页排版里恒不可见，也不允许被重新写入配置。
+ */
+val removedHomeLayoutTypes: Set<AppSettings.HomeLayoutType> = setOf(
+    AppSettings.HomeLayoutType.Banner,
+    AppSettings.HomeLayoutType.Announcement,
+    AppSettings.HomeLayoutType.UpdateInfo
+)
+
+/** 剔除已永久停用的首页布局项。 */
+fun List<AppSettings.HomeLayoutItem>.withoutRemovedHomeLayoutTypes():
+    List<AppSettings.HomeLayoutItem> = filterNot { it.type in removedHomeLayoutTypes }

@@ -3,6 +3,7 @@ package com.imcys.bilibilias.shared.feature.setting.layout
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.imcys.bilibilias.data.repository.AppSettingsRepository
+import com.imcys.bilibilias.data.repository.withoutRemovedHomeLayoutTypes
 import com.imcys.bilibilias.datastore.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +23,9 @@ class LayoutTypesetViewModel(
         viewModelScope.launch {
             appSettingsRepository.asyncHomeLayoutTypesetList()
             appSettings.collect {
-                _homeLayoutTypesetList.value = it.homeLayoutTypesetList
+                // 必须过滤：DataStore 里可能残留已永久停用的项（轮播图 / 公告 / 旧版更新），
+                // 直接赋值会让它们在「首页排版」里重新出现。
+                _homeLayoutTypesetList.value = it.homeLayoutTypesetList.withoutRemovedHomeLayoutTypes()
             }
         }
     }
