@@ -1,7 +1,10 @@
 <resources>
     <!-- Common strings -->
     <string name="common_privacy_policy">Chính sách quyền riêng tư</string>
-    <string name="app_privacy_policy_tip"><![CDATA["\n                            BILIBILIAS sử dụng dịch vụ của bên thứ ba để phân phối cấu hình từ xa. Do đó, bạn cần đồng ý với <a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">Chính sách quyền riêng tư</a> dưới đây.\n                            Nếu bạn không đồng ý với chính sách quyền riêng tư trên, ứng dụng có thể không nhận được cấu hình cần thiết và sẽ không hoạt động bình thường. Nhấp vào liên kết để <a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">đọc chính sách quyền riêng tư</a>.\n                        "]]></string>
+    <string name="app_privacy_policy_tip"><![CDATA[
+BILIBILIAS no longer relies on any third-party server. Video parsing, downloads, settings and login data stay on your device and are never uploaded to the developer's server.
+Tap "Agree" if you have read and accept this notice. Declining does not affect local features.
+]]></string>
     <string name="common_agree">Đồng ý</string>
     <string name="common_refuse">Từ chối</string>
     <string name="common_cancel">Hủy</string>

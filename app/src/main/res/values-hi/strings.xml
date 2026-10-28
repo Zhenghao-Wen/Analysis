@@ -2,9 +2,9 @@
     <!-- Common strings -->
     <string name="common_privacy_policy">गोपनीयता नीति</string>
     <string name="app_privacy_policy_tip"><![CDATA[
-\nBILIBILIAS रिमोट कॉन्फ़िगरेशन प्राप्त करने के लिए तीसरे पक्ष की सेवा का उपयोग करता है। इसलिए आपको नीचे दी गई <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">गोपनीयता नीति</a> से सहमत होना आवश्यक है।
-यदि आप ऊपर दी गई गोपनीयता नीति से सहमत नहीं हैं, तो ऐप आवश्यक कॉन्फ़िगरेशन नहीं प्राप्त कर पाएगा और सामान्य रूप से कार्य नहीं कर पाएगा। लिंक पर क्लिक करें <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">गोपनीयता नीति पढ़ें</a>।
-    ]]></string>
+BILIBILIAS no longer relies on any third-party server. Video parsing, downloads, settings and login data stay on your device and are never uploaded to the developer's server.
+Tap "Agree" if you have read and accept this notice. Declining does not affect local features.
+]]></string>
     <string name="common_agree">सहमत</string>
     <string name="common_refuse">अस्वीकार</string>
     <string name="common_cancel">रद्द करें</string>

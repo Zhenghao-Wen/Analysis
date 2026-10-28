@@ -1,7 +1,10 @@
 <resources>
     <!-- Common strings -->
     <string name="common_privacy_policy">Privacy Policy</string>
-    <string name="app_privacy_policy_tip"><![CDATA["\n                            BILIBILIAS uses a third-party service to deliver remote configurations. Therefore, you need to agree to the following <a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">Privacy Policy</a>.\n                            If you do not agree to the privacy policy above, the app may not be able to receive the required configuration and may not function properly. Click the link to <a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">read the privacy policy</a>.\n                        "]]></string>
+    <string name="app_privacy_policy_tip"><![CDATA[
+BILIBILIAS no longer relies on any third-party server. Video parsing, downloads, settings and login data stay on your device and are never uploaded to the developer's server.
+Tap "Agree" if you have read and accept this notice. Declining does not affect local features.
+]]></string>
     <string name="common_agree">Agree</string>
     <string name="common_refuse">Reject</string>
     <string name="common_cancel">Cancel</string>

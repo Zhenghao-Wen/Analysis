@@ -2,9 +2,9 @@
     <!-- Common strings -->
     <string name="common_privacy_policy">គោលនយោបាយភាពឯកជន</string>
     <string name="app_privacy_policy_tip"><![CDATA[
-\nBILIBILIAS ប្រើប្រាស់សេវាកម្មភាគីទីបីដើម្បីកំណត់រចនាសម្ព័ន្ធពីចម្ងាយ។ ដូច្នេះ អ្នកត្រូវតែយល់ព្រមនឹង <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">គោលនយោបាយភាពឯកជន</a> ខាងក្រោម។
-បើអ្នកមិនយល់ព្រមនឹងគោលនយោបាយនេះទេ អាប់នឹងអាចប្រើប្រាស់App ធម្មតាមិនបាន។ ចុចតំណនេះដើម្បី <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">អានគោលនយោបាយភាពឯកជន</a>។
-    ]]></string>
+BILIBILIAS no longer relies on any third-party server. Video parsing, downloads, settings and login data stay on your device and are never uploaded to the developer's server.
+Tap "Agree" if you have read and accept this notice. Declining does not affect local features.
+]]></string>
     <string name="common_agree">យល់ព្រម</string>
     <string name="common_refuse">បដិសេធ</string>
     <string name="common_cancel">បោះបង់</string>

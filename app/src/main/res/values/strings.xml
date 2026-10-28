@@ -4,7 +4,10 @@
     
     <!-- Common strings -->
     <string name="common_privacy_policy">隐私政策</string>
-    <string name="app_privacy_policy_tip"><![CDATA["\n                            BILIBILIAS使用第三方服务来接收远程配置，因此您需要同意下面的<a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">《隐私政策》</a>\n                            若您不同意上述隐私政策，App有可能无法接受推送的配置，导致无法正常使用。点击链接查看<a href=\"https://bilibilias.imcys.com/policy/privacy_policy.html\">阅读隐私政策</a>。\n                        "]]></string>
+    <string name="app_privacy_policy_tip"><![CDATA[
+本应用已移除对第三方服务器的依赖：视频解析、缓存下载、设置与登录信息均只保存在你的本机，不会上传到开发者服务器。
+点击「同意」表示你已阅读并接受本说明；拒绝不会影响本地功能的正常使用。
+]]></string>
     <string name="common_agree">同意</string>
     <string name="common_refuse">拒绝</string>
     <string name="common_cancel">取消</string>

@@ -2,9 +2,9 @@
     <!-- Common strings -->
     <string name="common_privacy_policy">개인정보 처리방침</string>
     <string name="app_privacy_policy_tip"><![CDATA[
-\nBILIBILIAS는 원격 구성을 제공하기 위해 제3자 서비스를 사용합니다. 아래 <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">개인정보 처리방침</a>에 동의해주셔야 합니다.
-위 개인정보 처리방침에 동의하지 않으면 앱이 필요한 구성을 수신하지 못해 정상적으로 사용할 수 없습니다. 아래 링크를 클릭하여 <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">개인정보 처리방침 읽기</a>를 확인하세요.
-    ]]></string>
+BILIBILIAS no longer relies on any third-party server. Video parsing, downloads, settings and login data stay on your device and are never uploaded to the developer's server.
+Tap "Agree" if you have read and accept this notice. Declining does not affect local features.
+]]></string>
     <string name="common_agree">동의</string>
     <string name="common_refuse">거부</string>
     <string name="common_cancel">취소</string>

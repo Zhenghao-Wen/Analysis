@@ -1,12 +1,10 @@
 <resources>
     <!-- Common strings -->
     <string name="common_privacy_policy">Политика конфиденциальности</string>
-    <string name="app_privacy_policy_tip">
-        <![CDATA[
-\nBILIBILIAS использует сторонний сервис для доставки удалённой конфигурации. Поэтому вам необходимо согласиться с <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">Политикой конфиденциальности</a>, приведённой ниже.
-Если вы не согласны с указанной политикой конфиденциальности, приложение, возможно, не сможет принимать новую конфигурацию и корректно работать. Перейдите по ссылке для <a href="https://bilibilias.imcys.com/policy/privacy_policy.html">ознакомления с политикой конфиденциальности</a>.
-        ]]>
-    </string>
+    <string name="app_privacy_policy_tip"><![CDATA[
+BILIBILIAS no longer relies on any third-party server. Video parsing, downloads, settings and login data stay on your device and are never uploaded to the developer's server.
+Tap "Agree" if you have read and accept this notice. Declining does not affect local features.
+]]></string>
     <string name="common_agree">Согласиться</string>
     <string name="common_refuse">Отклонить</string>
     <string name="common_cancel">Отмена</string>
