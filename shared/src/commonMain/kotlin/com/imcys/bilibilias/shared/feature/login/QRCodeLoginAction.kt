@@ -5,7 +5,15 @@ package com.imcys.bilibilias.shared.feature.login
  *
  * 入参是**二维码承载的内容**（B 站扫码地址 + 回跳 deep link），不是图片地址。
  * Android 侧由 qrose 本地编码生成位图；iOS 侧暂仍走旧的云端出图路径（见各自实现）。
+ *
+ * [darkColorArgb] / [lightColorArgb] 是界面显示二维码时使用的同一组颜色（ARGB），
+ * 由调用方从 MaterialTheme 取出后传入，保证**保存的图片与界面显示效果一致**
+ * （例如动态取色时，导出图片也使用同一主色）。
  */
-internal expect fun saveQRCodeImageToGalleryByPlatform(qrCodeContent: String?): Boolean
+internal expect fun saveQRCodeImageToGalleryByPlatform(
+    qrCodeContent: String?,
+    darkColorArgb: Long,
+    lightColorArgb: Long,
+): Boolean
 
 internal expect fun goToScanQRByPlatform(): Boolean

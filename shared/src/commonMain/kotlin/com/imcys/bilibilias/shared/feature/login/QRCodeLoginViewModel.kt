@@ -197,9 +197,14 @@ class QRCodeLoginViewModel(
         }
     }
 
-    fun saveQRCodeImageToGallery() {
-        // 传入的是「待编码内容」而非图片地址：二维码由本地生成，不再请求云端出图服务
-        saveQRCodeImageToGalleryByPlatform(getQRCodeContentForScan())
+    fun saveQRCodeImageToGallery(darkColorArgb: Long, lightColorArgb: Long) {
+        // 传入的是「待编码内容」而非图片地址：二维码由本地生成，不再请求云端出图服务。
+        // 颜色由界面传入，保证保存的图片与屏幕显示一致。
+        saveQRCodeImageToGalleryByPlatform(
+            qrCodeContent = getQRCodeContentForScan(),
+            darkColorArgb = darkColorArgb,
+            lightColorArgb = lightColorArgb,
+        )
     }
 
     fun goToScanQR() {

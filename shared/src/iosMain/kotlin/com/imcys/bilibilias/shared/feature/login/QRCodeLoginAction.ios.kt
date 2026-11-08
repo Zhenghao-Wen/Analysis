@@ -16,9 +16,14 @@ import platform.UIKit.UIApplication
  */
 private const val LEGACY_QR_IMAGE_PROVIDER = "https://pan.misakamoe.com/qrcode/?url="
 
-internal actual fun saveQRCodeImageToGalleryByPlatform(qrCodeContent: String?): Boolean {
+internal actual fun saveQRCodeImageToGalleryByPlatform(
+    qrCodeContent: String?,
+    darkColorArgb: Long,
+    lightColorArgb: Long,
+): Boolean {
     if (qrCodeContent.isNullOrBlank()) return false
-    // 旧行为：把二维码内容交给云端出图服务，再下载保存（待 iOS 侧改为本地生成）
+    // 旧行为：把二维码内容交给云端出图服务，再下载保存（待 iOS 侧改为 qrose 本地生成）。
+    // darkColorArgb / lightColorArgb 在 iOS 本地渲染实现完成前不会被使用。
     return saveImageUrlToPhotos(LEGACY_QR_IMAGE_PROVIDER + qrCodeContent.encodeForQuery())
 }
 
