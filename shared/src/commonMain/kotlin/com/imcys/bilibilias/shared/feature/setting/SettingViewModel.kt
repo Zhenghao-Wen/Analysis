@@ -100,25 +100,31 @@ class SettingViewModel(
     }
 
     suspend fun logout() {
-        val user = biliUsersDao.getBILIUserByUid(usersDataSource.getUserId())
+        val currentUserId = usersDataSource.getUserId()
+        val user = biliUsersDao.getBILIUserByUid(currentUserId)
+        val cookies = user?.let { biliUserCookiesDao.getBILIUserCookiesByUid(it.id) }.orEmpty()
+        val biliJct = cookies.firstOrNull { cookie -> cookie.name == "bili_jct" }?.value
+
+        // 先做「本地登出」，且不依赖是否拿得到 bili_jct：
+        // 之前只有当 bili_jct 存在时才置空 currentUserId（否则直接 return），
+        // 没拿到该 cookie 时整段逻辑被跳过，界面会一直显示已登录。
+        usersDataSource.setUserId(0L)
         user?.let {
-            val cookies = biliUserCookiesDao.getBILIUserCookiesByUid(it.id)
+            biliUserCookiesDao.deleteBILICookiesByUid(it.id)
+            biliUsersDao.deleteBILIUserByUid(it.id)
+        }
+        // 立即更新本页状态（其它页面通过 usersDataSource.users 流同步刷新）
+        _uiState.value = _uiState.value.copy(
+            isLogin = false,
+            currentMid = 0
+        )
+        asCookiesStorage.clearCookies()
+        asCookiesStorage.syncDataBaseCookies()
 
-            val biliJct =
-                cookies.firstOrNull { cookie -> cookie.name == "bili_jct" }?.value?.apply {
-                    usersDataSource.setUserId(0L)
-                    biliUserCookiesDao.deleteBILICookiesByUid(user.id)
-                    biliUsersDao.deleteBILIUserByUid(user.id)
-                } ?: return
-
-            _uiState.value = _uiState.value.copy(
-                isLogin = false,
-                currentMid = 0
-            )
-
-            userInfoRepository.logout(biliJct).last()
-            asCookiesStorage.clearCookies()
-            asCookiesStorage.syncDataBaseCookies()
+        // 最后尽力通知服务端登出：网络失败不影响「本地已登出」这个结果，
+        // 否则异常会向上冒泡，导致界面卡在「正在退出登录」。
+        if (!biliJct.isNullOrBlank()) {
+            runCatching { userInfoRepository.logout(biliJct).last() }
         }
     }
 

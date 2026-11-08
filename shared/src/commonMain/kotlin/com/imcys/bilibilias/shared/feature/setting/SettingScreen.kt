@@ -444,10 +444,15 @@ fun SettingScreen(
                 ASTextButton(onClick = {
                     showLogoutLoading = true
                     coroutineScope.launch(Dispatchers.IO) {
-                        vm.logout()
+                        // logout() 内部已保证「本地登出」先行且不再抛异常；
+                        // 这里再兜一层，确保无论发生什么弹窗都会关闭、状态都会刷新。
+                        val finishMid = runCatching {
+                            vm.logout()
+                            uiState.currentMid
+                        }.getOrDefault(0L)
                         showLogoutLoading = false
                         showLogoutDialog = false
-                        onLogoutFinish(uiState.currentMid)
+                        onLogoutFinish(finishMid)
                     }
                 }) {
                     Text(stringResource(Res.string.setting_logout))
