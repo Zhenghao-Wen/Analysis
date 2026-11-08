@@ -456,6 +456,32 @@ function / field / constructor / getter，因此必须写成 `@get:Ignore`，
 写 `mediaContainerExtension = X.extension` 与
 `namingConventionInfoJson = NamingConventionCodec.encode(x)`。
 
+## 凭据加密
+
+账号 token 与 Cookie 属于敏感凭据，落库前加密，读取时解密：
+
+- 接口：`core/database/.../crypto/CredentialCipher.kt`
+  - `encrypt` 返回可落库字符串，`decrypt` 失败必须返回 `null`（不得回退明文）
+  - `platformCredentialCipher()` 为 `expect/actual`
+- Android：`AndroidKeystoreCredentialCipher`
+  - 密钥由 Android Keystore 生成并保管（AES-256-GCM），应用进程无法导出明文密钥
+  - 密文格式 `v1:` + Base64(IV || 密文)，IV 每次随机
+- iOS：`PassthroughCredentialCipher`（iOS 目标当前冻结，恢复维护时应改 Keychain）
+
+加密点在 DAO 边界，业务代码始终拿到明文实体：
+
+- `EncryptedBILIUsersDao`：`accessToken` / `refreshToken` 加解密；解密失败按 `null`
+  处理，请求退化为未登录
+- `EncryptedBILIUserCookiesDao`：Cookie `value` 加解密；解密失败的 Cookie 直接从结果中
+  剔除（`value` 非空，无法用 `null` 表达不可用）
+
+`CommonDatabaseModule` 中必须**显式声明接口类型**注册装饰器
+（`factory<BILIUsersDao> { ... }`），否则 Koin 会按具体类型注册，消费方按接口解析时会失败。
+
+> 存量数据：旧版本以明文存储的凭据无法解密，因此升级后需要重新登录一次。
+> `AsCookiesStorage` 在同步 Cookie 时若发现「登录态存在但没有任何可用 Cookie」，
+> 会清空会话自愈，避免界面显示已登录而请求全部失败。
+
 ## Migration 设计
 
 文件：`core/database/src/commonMain/kotlin/com/imcys/bilibilias/database/Migration.kt`
