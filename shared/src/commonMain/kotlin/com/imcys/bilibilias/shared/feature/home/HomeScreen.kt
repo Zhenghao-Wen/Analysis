@@ -93,6 +93,7 @@ import com.imcys.bilibilias.common.data.getASBuildType
 import com.imcys.bilibilias.shared.util.ClipboardAutoHandler
 import com.imcys.bilibilias.data.model.BILILoginUserModel
 import com.imcys.bilibilias.database.entity.BILIUsersEntity
+import com.imcys.bilibilias.common.event.sendToastEvent
 import com.imcys.bilibilias.datastore.*
 import com.imcys.bilibilias.shared.download.model.AppDownloadTask
 import com.imcys.bilibilias.network.NetWorkResult
@@ -330,6 +331,8 @@ private fun HomeContent(
     goToPage: (NavKey) -> Unit
 ) {
     val vm = koinViewModel<HomeViewModel>()
+    // 用于在事件回调里发送 Snackbar（例如来源校验通过后的提示）
+    val snackbarScope = rememberCoroutineScope()
 
     val bulletinInfo by vm.bulletinInfo.collectAsStateWithLifecycle()
     val appSettings by vm.appSettingsState.collectAsStateWithLifecycle()
@@ -587,6 +590,10 @@ private fun HomeContent(
                     vm.markPackageSourceVerifiedForCurrentBuild()
                     packageSourceVerifyDialogShow = false
                     packageSourceWarningDialogShow = false
+                    // 校验通过后给出明确反馈（全局 Snackbar）
+                    snackbarScope.launch {
+                        sendToastEvent("验证通过，欢迎使用")
+                    }
                 },
                 onBack = {
                     packageSourceVerifyDialogShow = false
