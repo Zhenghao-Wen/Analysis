@@ -55,8 +55,18 @@ class AsCookiesStorage(
             // 未来登录走其他的操作
         } else {
             // 登录
-            val dataBaseCookies =
-                biliUserCookiesDao.getBILIUserCookiesByUid(usersDataSource.getUserId())
+            val userId = usersDataSource.getUserId()
+            val dataBaseCookies = biliUserCookiesDao.getBILIUserCookiesByUid(userId)
+            // 自愈：登录态存在但一条可用 Cookie 都没有，说明本地凭据不可用
+            // （典型情况：旧版本以明文存库，接入加密后无法解密）。
+            // 与其让界面显示「已登录」而所有请求都失败，不如清掉会话让用户重新登录。
+            if (dataBaseCookies.isEmpty()) {
+                runCatching {
+                    usersDataSource.setUserId(0L)
+                    biliUserCookiesDao.deleteBILICookiesByUid(userId)
+                }
+                return
+            }
             cookieMutex.withLock {
                 dataBaseCookies.forEach {
                     cookies.removeAll { cookie -> cookie.name == it.name }
