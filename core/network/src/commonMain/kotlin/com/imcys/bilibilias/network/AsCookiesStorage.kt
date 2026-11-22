@@ -57,13 +57,21 @@ class AsCookiesStorage(
             // 登录
             val userId = usersDataSource.getUserId()
             val dataBaseCookies = biliUserCookiesDao.getBILIUserCookiesByUid(userId)
-            // 自愈：登录态存在但一条可用 Cookie 都没有，说明本地凭据不可用
+            // 自愈：**库里有 Cookie 记录但一条都解不出来**，说明本地凭据不可用
             // （典型情况：旧版本以明文存库，接入加密后无法解密）。
             // 与其让界面显示「已登录」而所有请求都失败，不如清掉会话让用户重新登录。
+            //
+            // 注意必须用原始记录数判断：TV/accessKey 登录本来就可能没有任何 Cookie，
+            // 那种情况下不能把会话清掉。
             if (dataBaseCookies.isEmpty()) {
-                runCatching {
-                    usersDataSource.setUserId(0L)
-                    biliUserCookiesDao.deleteBILICookiesByUid(userId)
+                val storedCount = runCatching {
+                    biliUserCookiesDao.countBILIUserCookiesByUid(userId)
+                }.getOrDefault(0)
+                if (storedCount > 0) {
+                    runCatching {
+                        usersDataSource.setUserId(0L)
+                        biliUserCookiesDao.deleteBILICookiesByUid(userId)
+                    }
                 }
                 return
             }
@@ -106,7 +114,19 @@ class AsCookiesStorage(
         val expiresAt = cookie.expires?.timestamp
         if (expiresAt != null && expiresAt < platformEpochMillis()) return
 
-        val mCookie = cookie.copy(domain = requestUrl.host)
+        // 关键：bilibili 域的 cookie 统一放到主域 `.bilibili.com`。
+        //
+        // 扫码登录时 SESSDATA / bili_jct 等由 passport.bilibili.com 下发，
+        // 旧实现强行把 domain 改成「发起请求的 host」，于是这些 cookie 只会发往
+        // passport 子域；紧接着请求 api.bilibili.com 取用户信息时自然变成「未登录」，
+        // 表现就是收到登录确认却卡在加载中。
+        // 现在无论服务器下发的 Domain 是什么（可能缺省、可能是子域），
+        // 只要来源是 bilibili 域就归到 `.bilibili.com`，登录态即可跨子域复用。
+        val mCookie = if (requestUrl.host.isBilibiliHost()) {
+            cookie.copy(domain = ".bilibili.com")
+        } else {
+            cookie.copy(domain = requestUrl.host)
+        }
         cookieMutex.withLock {
             cookies.removeAll { it -> it.name == mCookie.name }
             cookies.add(mCookie)

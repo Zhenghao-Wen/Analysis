@@ -132,6 +132,8 @@ androidx-datastore-core = { group = "androidx.datastore", name = "datastore-core
 androidx-datastore-core-okio = { group = "androidx.datastore", name = "datastore-core-okio", version.ref = "androidxDatastore" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
+# 二维码矩阵编码器：用于计算模块数（决定静区宽度）与 iOS 端本地绘制
+qrose-encoder-matrix = { module = "io.github.alexzhirkevich:qrose-encoder-matrix", version.ref = "qrose" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }

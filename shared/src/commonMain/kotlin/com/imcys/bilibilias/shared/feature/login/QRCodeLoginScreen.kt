@@ -62,7 +62,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
@@ -168,11 +167,6 @@ fun QRCodeLoginScreen(
         }
     }
 
-    // 保存二维码时使用与界面显示相同的配色：前景=primary，底色=容器背景色。
-    // 这样才能保证导出的图片与屏幕上看到的一致（含动态取色/深浅主题）。
-    val qrDarkColorArgb = MaterialTheme.colorScheme.primary.toArgb().toLong()
-    val qrLightColorArgb = MaterialTheme.colorScheme.surfaceContainer.toArgb().toLong()
-
     QRLoginScaffold(onToBack, onToCookieLogin) {
         Column(
             Modifier
@@ -191,7 +185,7 @@ fun QRCodeLoginScreen(
                                 agreePrivacyPolicy,
                                 updateLoginPlatform = vm::updateLoginPlatform,
                                 updateQrCode = vm::getLoadLoginQRCodeInfo,
-                                saveQRCodeImage = { vm.saveQRCodeImageToGallery(qrDarkColorArgb, qrLightColorArgb) },
+                                saveQRCodeImage = { vm.saveQRCodeImageToGallery() },
                                 goScanQR = { vm.goToScanQR() },
                                 updateAgreePrivacyPolicy = { state ->
                                     agreePrivacyPolicy = state
@@ -209,7 +203,7 @@ fun QRCodeLoginScreen(
                                 agreePrivacyPolicy,
                                 updateLoginPlatform = vm::updateLoginPlatform,
                                 updateQrCode = vm::getLoadLoginQRCodeInfo,
-                                saveQRCodeImage = { vm.saveQRCodeImageToGallery(qrDarkColorArgb, qrLightColorArgb) },
+                                saveQRCodeImage = { vm.saveQRCodeImageToGallery() },
                                 goScanQR = { vm.goToScanQR() },
                                 updateAgreePrivacyPolicy = { state ->
                                     agreePrivacyPolicy = state

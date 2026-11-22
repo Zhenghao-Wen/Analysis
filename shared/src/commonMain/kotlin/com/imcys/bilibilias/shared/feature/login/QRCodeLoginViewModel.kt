@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import com.imcys.bilibilias.common.event.sendToastEvent
 import com.imcys.bilibilias.common.event.sendToastEventOnBlocking
@@ -66,6 +68,8 @@ class QRCodeLoginViewModel(
     )
 
     private val currentCookies = mutableListOf<Cookie>()
+    /** 保护 [currentCookies]：扫码轮询协程与保存登录信息协程会并发访问。 */
+    private val cookiesMutex = Mutex()
     private var currentQrCodePollInfo: QRCodePollInfo? = null
 
 
@@ -124,6 +128,20 @@ class QRCodeLoginViewModel(
         uiState = uiState.copy(isLoginLoading = true)
         viewModelScope.launch {
             currentQrCodePollInfo = qrCodePollInfo
+            // 保险：先把扫码轮询拿到的 Cookie 合并进 Ktor 的 Cookie 存储，
+            // 保证紧接着请求用户信息时一定带上登录态。
+            // （只按名字覆盖，不删除已有 Cookie，避免把 buvid3 等冲掉）
+            runCatching {
+                val snapshot = cookiesMutex.withLock { currentCookies.toList() }
+                if (snapshot.isNotEmpty()) {
+                    val merged = asCookiesStorage.getAllCookies()
+                    snapshot.forEach { cookie ->
+                        merged.removeAll { it.name == cookie.name }
+                        merged.add(cookie)
+                    }
+                    asCookiesStorage.updateAllCookies(merged)
+                }
+            }
             qrCodeLoginRepository.getLoginUserInfo(
                 uiState.selectedLoginPlatform,
                 qrCodePollInfo?.accessToken
@@ -138,73 +156,92 @@ class QRCodeLoginViewModel(
      * 保存登录用户信息
      */
     fun saveLoginInfo(biliLoginUserModel: BILILoginUserModel?, onSaveFinish: () -> Unit) {
-        if (biliLoginUserModel == null) return
+        if (biliLoginUserModel == null) {
+            failLogin("登录信息为空，请重新扫码登录")
+            return
+        }
 
         viewModelScope.launch(Dispatchers.IO) {
-            if (biliLoginUserModel.mid == 0L) return@launch
-            val oldUserInfo = qrCodeLoginRepository.getBILIUserByMidAndPlatform(
-                biliLoginUserModel.mid!!,
-                uiState.selectedLoginPlatform,
-            )
-            val newLoginUserInfo = BILIUsersEntity(
-                name = biliLoginUserModel.name ?: "",
-                mid = biliLoginUserModel.mid ?: 0L,
-                face = biliLoginUserModel.face ?: "",
-                level = biliLoginUserModel.level ?: 0,
-                vipState = biliLoginUserModel.vipState ?: 0,
-                loginPlatform = uiState.selectedLoginPlatform,
-                accessToken = currentQrCodePollInfo?.accessToken,
-                refreshToken = currentQrCodePollInfo?.refreshToken
-            )
-
-            val userId = if (oldUserInfo == null) {
-                qrCodeLoginRepository.saveLoginInfo(newLoginUserInfo)
-            } else {
-                newLoginUserInfo.apply { newLoginUserInfo.id = oldUserInfo.id }
-                qrCodeLoginRepository.updateBILIUser(newLoginUserInfo)
-                newLoginUserInfo.id
-            }
-
-            // 新增Cookie存储
-            qrCodeLoginRepository.deleteBILICookiesByUid(userId)
-
-            // 新增
-            currentCookies.forEach {
-                val cookie = BILIUserCookiesEntity(
-                    userId = userId,
-                    name = it.name,
-                    value = it.value,
-                    path = it.path,
-                    secure = it.secure,
-                    domain = it.domain,
-                    encoding = ASSharedCookieEncoding.valueOf(it.encoding.name),
-                    httpOnly = it.httpOnly
+            try {
+                if (biliLoginUserModel.mid == 0L) {
+                    failLogin("未获取到账号信息，请重新扫码登录")
+                    return@launch
+                }
+                val oldUserInfo = qrCodeLoginRepository.getBILIUserByMidAndPlatform(
+                    biliLoginUserModel.mid!!,
+                    uiState.selectedLoginPlatform,
                 )
-                qrCodeLoginRepository.insertBILIUserCookie(cookie)
+                val newLoginUserInfo = BILIUsersEntity(
+                    name = biliLoginUserModel.name ?: "",
+                    mid = biliLoginUserModel.mid ?: 0L,
+                    face = biliLoginUserModel.face ?: "",
+                    level = biliLoginUserModel.level ?: 0,
+                    vipState = biliLoginUserModel.vipState ?: 0,
+                    loginPlatform = uiState.selectedLoginPlatform,
+                    accessToken = currentQrCodePollInfo?.accessToken,
+                    refreshToken = currentQrCodePollInfo?.refreshToken
+                )
+
+                val userId = if (oldUserInfo == null) {
+                    qrCodeLoginRepository.saveLoginInfo(newLoginUserInfo)
+                } else {
+                    newLoginUserInfo.apply { newLoginUserInfo.id = oldUserInfo.id }
+                    qrCodeLoginRepository.updateBILIUser(newLoginUserInfo)
+                    newLoginUserInfo.id
+                }
+
+                // 新增Cookie存储
+                qrCodeLoginRepository.deleteBILICookiesByUid(userId)
+
+                // 新增（先加锁取快照，避免与轮询协程并发修改）
+                val cookiesSnapshot = cookiesMutex.withLock { currentCookies.toList() }
+                cookiesSnapshot.forEach {
+                    val cookie = BILIUserCookiesEntity(
+                        userId = userId,
+                        name = it.name,
+                        value = it.value,
+                        path = it.path,
+                        secure = it.secure,
+                        domain = it.domain,
+                        encoding = ASSharedCookieEncoding.valueOf(it.encoding.name),
+                        httpOnly = it.httpOnly
+                    )
+                    qrCodeLoginRepository.insertBILIUserCookie(cookie)
+                }
+
+                usersDataSource.setUserId(userId)
+                asCookiesStorage.syncDataBaseCookies()
+                appSettingsRepository.updateVideoParsePlatform(uiState.selectedLoginPlatform.toDataStoreType())
+
+                uiState = uiState.copy(isLoginLoading = false)
+
+                launch(Dispatchers.Main) {
+                    onSaveFinish.invoke()
+                }
+            } catch (e: Exception) {
+                // 任何一步失败（凭据落库、Cookie 同步等）都必须结束加载态，
+                // 否则界面会一直卡在 Material3 的加载指示器上。
+                failLogin("登录失败：${e.message ?: "未知错误"}")
+            } finally {
+                if (uiState.isLoginLoading) {
+                    uiState = uiState.copy(isLoginLoading = false)
+                }
             }
-
-            usersDataSource.setUserId(userId)
-            asCookiesStorage.syncDataBaseCookies()
-            appSettingsRepository.updateVideoParsePlatform(uiState.selectedLoginPlatform.toDataStoreType())
-
-            uiState = uiState.copy(isLoginLoading = false)
-
-
-            launch(Dispatchers.Main) {
-                onSaveFinish.invoke()
-            }
-
         }
     }
 
-    fun saveQRCodeImageToGallery(darkColorArgb: Long, lightColorArgb: Long) {
+    /**
+     * 登录失败/异常时统一收尾：结束加载态并提示用户。
+     */
+    private fun failLogin(message: String) {
+        uiState = uiState.copy(isLoginLoading = false)
+        viewModelScope.launch { sendToastEvent(message) }
+    }
+
+    fun saveQRCodeImageToGallery() {
         // 传入的是「待编码内容」而非图片地址：二维码由本地生成，不再请求云端出图服务。
-        // 颜色由界面传入，保证保存的图片与屏幕显示一致。
-        saveQRCodeImageToGalleryByPlatform(
-            qrCodeContent = getQRCodeContentForScan(),
-            darkColorArgb = darkColorArgb,
-            lightColorArgb = lightColorArgb,
-        )
+        // 颜色与静区由 defaultQrOptions / QrQuietZoneModules 统一决定（始终浅底深色）。
+        saveQRCodeImageToGalleryByPlatform(getQRCodeContentForScan())
     }
 
     fun goToScanQR() {
@@ -265,9 +302,12 @@ class QRCodeLoginViewModel(
     /**
      * 保存Cookie
      */
-    private fun handleResponseCookie(cookieInfo: TvQRCodePollInfo.CookieInfo?) {
+    private suspend fun handleResponseCookie(cookieInfo: TvQRCodePollInfo.CookieInfo?) {
         if (cookieInfo == null) return
-        viewModelScope.launch {
+        // 注意：这里**不能**再包一层 launch。之前是异步写入 currentCookies，
+        // 与 saveLoginInfo 读取存在竞争，偶尔会把空/不完整的 Cookie 存进数据库，
+        // 于是「已收到登录确认」却判定为未登录。改为在收集协程里同步写入。
+        cookiesMutex.withLock {
             currentCookies.clear()
             cookieInfo.cookies.forEach { cookie ->
                 val cookieInfo = Cookie(
@@ -275,13 +315,12 @@ class QRCodeLoginViewModel(
                     value = cookie.value,
                     httpOnly = cookie.httpOnly == 1L,
                     secure = cookie.secure == 1L,
-                    domain = "bilibili.com",
+                    domain = ".bilibili.com",
                     path = "/"
                 )
                 currentCookies.add(cookieInfo)
             }
         }
-
     }
 
     /**
@@ -290,8 +329,11 @@ class QRCodeLoginViewModel(
     private suspend fun handleHeaderCookie(responseHeader: Set<Map.Entry<String, List<String>>>?) {
         responseHeader?.forEach {
             if (it.key == "Set-Cookie") {
-                currentCookies.clear()
-                currentCookies.addAll(asCookiesStorage.getAllCookies())
+                val latest = asCookiesStorage.getAllCookies()
+                cookiesMutex.withLock {
+                    currentCookies.clear()
+                    currentCookies.addAll(latest)
+                }
             }
         }
     }

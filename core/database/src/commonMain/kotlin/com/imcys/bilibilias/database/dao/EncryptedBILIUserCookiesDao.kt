@@ -26,4 +26,8 @@ class EncryptedBILIUserCookiesDao(
 
     override suspend fun deleteBILICookiesByUid(userId: Long): Int =
         delegate.deleteBILICookiesByUid(userId)
+
+    /** 计数不涉及密文内容，直接转发即可。 */
+    override suspend fun countBILIUserCookiesByUid(userId: Long): Int =
+        delegate.countBILIUserCookiesByUid(userId)
 }

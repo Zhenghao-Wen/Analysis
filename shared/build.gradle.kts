@@ -66,6 +66,8 @@ kotlin {
                 implementation(libs.confettikit)
                 // 二维码本地生成（替代 pan.misakamoe.com 云端出图）
                 implementation(libs.qrose)
+                // 矩阵编码器：计算静区（模块数）以及 iOS 端纯本地绘制
+                implementation(libs.qrose.encoder.matrix)
                 api(project(":core:data"))
                 api(project(":core:common"))
                 api(project(":core:ui"))

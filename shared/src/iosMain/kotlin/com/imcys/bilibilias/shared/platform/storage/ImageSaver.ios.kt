@@ -32,3 +32,16 @@ private fun saveImageDataToPhotos(data: NSData?): Boolean {
         true
     }.getOrDefault(false)
 }
+
+/**
+ * 把已经在本地生成好的 [UIImage] 写入相册。
+ *
+ * 供「本地渲染二维码后保存」等场景使用，避免再经过网络下载这一步。
+ */
+@OptIn(ExperimentalForeignApi::class)
+internal fun saveImageToPhotos(image: UIImage): Boolean {
+    return runCatching {
+        UIImageWriteToSavedPhotosAlbum(image, null, null, null)
+        true
+    }.getOrDefault(false)
+}
