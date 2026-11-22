@@ -149,9 +149,9 @@ fun QRCodeLoginScreen(
 
     // 监听登录信息获取
     LaunchedEffect(loginUserInfoState) {
-        when (loginUserInfoState) {
+        when (val state = loginUserInfoState) {
             is NetWorkResult.Success<*> -> {
-                vm.saveLoginInfo(loginUserInfoState.data) {
+                vm.saveLoginInfo(state.data) {
                     FirebaseExt.logLogin("QRCode")
                     if (route.isFromRoam || route.isFromAnalysis) {
                         // 如果是从漫游页面进入的，登录成功后直接返回
@@ -162,6 +162,9 @@ fun QRCodeLoginScreen(
                     }
                 }
             }
+
+            // 取用户信息失败也必须结束加载态，否则界面会一直卡在加载指示器
+            is NetWorkResult.Error -> vm.onLoginUserInfoError(state.errorMsg)
 
             else -> {}
         }

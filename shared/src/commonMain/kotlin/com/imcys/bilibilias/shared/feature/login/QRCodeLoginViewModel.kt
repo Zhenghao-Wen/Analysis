@@ -231,6 +231,16 @@ class QRCodeLoginViewModel(
     }
 
     /**
+     * 拉取登录用户信息失败时的收尾。
+     *
+     * 之前界面只在 Success 时才继续，Error/Loading 分支什么都不做，
+     * 于是加载指示器会一直转，看起来像「卡住」。
+     */
+    fun onLoginUserInfoError(errorMsg: String?) {
+        failLogin(errorMsg ?: "获取登录信息失败，请重试")
+    }
+
+    /**
      * 登录失败/异常时统一收尾：结束加载态并提示用户。
      */
     private fun failLogin(message: String) {
