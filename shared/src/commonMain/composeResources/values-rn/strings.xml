@@ -23,7 +23,7 @@ Tap Agree if you have read and accept this notice. Declining does not affect loc
     <string name="login_cookie_title">Вход по cookie Bilibili</string>
     <string name="login_use_cookie">Войти с помощью cookie</string>
     <string name="login_after_you_can">После входа вы сможете:</string>
-    <string name="login_benefits"><![CDATA[·Поддержка видео с более высоким качеством и битрейтом\n·Поддержка кэширования аниме\n·Возможность использования премиальных прав\n·Возможность пользоваться услугой роуминга]]></string>
+    <string name="login_benefits"><![CDATA[·Поддержка видео с более высоким качеством и битрейтом\n·Поддержка кэширования аниме\n·Возможность использования премиальных прав]]></string>
     <string name="login_agreement_prefix">Вход означает согласие:</string>
     <string name="login_bilibili_agreement">·Соглашение по аккаунту и сообществу Bilibili</string>
     <string name="login_privacy_agreement">·《Соглашение о конфиденциальности BILIBILIAS》</string>

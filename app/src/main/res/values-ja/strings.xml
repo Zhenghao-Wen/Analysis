@@ -23,7 +23,7 @@ Tap Agree if you have read and accept this notice. Declining does not affect loc
     <string name="login_cookie_title">ビリビリCookieログイン</string>
     <string name="login_use_cookie">Cookieでログイン</string>
     <string name="login_after_you_can">ログイン後できること：</string>
-    <string name="login_benefits"><![CDATA[·より高い画質・高ビットレートの動画対応\n·アニメのキャッシュ対応\n·プレミアム会員特典の使用\n·ローミングサービスの利用]]></string>
+    <string name="login_benefits"><![CDATA[·より高い画質・高ビットレートの動画対応\n·アニメのキャッシュ対応\n·プレミアム会員特典の使用]]></string>
     <string name="login_agreement_prefix">ログインは以下への同意を意味します：</string>
     <string name="login_bilibili_agreement">·ビリビリアカウントとコミュニティに関する規約</string>
     <string name="login_privacy_agreement">·《BILIBILIASプライバシーポリシー》</string>

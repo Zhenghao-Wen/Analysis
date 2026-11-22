@@ -22,7 +22,7 @@ Tap Agree if you have read and accept this notice. Declining does not affect loc
     <string name="login_cookie_title">بیلیبیلی کوکی لاگ ان</string>
     <string name="login_use_cookie">کوکی سے لاگ ان کریں</string>
     <string name="login_after_you_can">لاگ ان کے بعد آپ کر سکتے ہیں:</string>
-    <string name="login_benefits"><![CDATA[· زیادہ اعلیٰ معیار اور زیادہ بٹ ریٹ ویڈیوز کی حمایت\n· ڈرامہ (Bangumi) کیشنگ کی سہولت\n· پریمیم ممبر فوائد سے استفادہ\n· رومنگ سروس سے لطف اندوزی]]></string>
+    <string name="login_benefits"><![CDATA[· زیادہ اعلیٰ معیار اور زیادہ بٹ ریٹ ویڈیوز کی حمایت\n· ڈرامہ (Bangumi) کیشنگ کی سہولت\n· پریمیم ممبر فوائد سے استفادہ]]></string>
     <string name="login_agreement_prefix">لاگ ان کرتے ہوئے آپ ان سے متفق ہیں:</string>
     <string name="login_bilibili_agreement">· بیلیبیلی اکاؤنٹ اور کمیونٹی سے متعلق معاہدے</string>
     <string name="login_privacy_agreement">· BILIBILIAS کی رازداری پالیسی</string>

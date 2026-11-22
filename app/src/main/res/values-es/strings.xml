@@ -23,7 +23,7 @@ Tap Agree if you have read and accept this notice. Declining does not affect loc
     <string name="login_cookie_title">Inicio de sesión con Cookie de BiliBili</string>
     <string name="login_use_cookie">Iniciar sesión con Cookie</string>
     <string name="login_after_you_can">Después de iniciar sesión puedes:</string>
-    <string name="login_benefits"><![CDATA[·Soportar vídeos con mayor calidad y tasa de bits\n·Soportar caché de anime\n·Soportar privilegios de gran miembro\n·Soportar servicio de roaming]]></string>
+    <string name="login_benefits"><![CDATA[·Soportar vídeos con mayor calidad y tasa de bits\n·Soportar caché de anime\n·Soportar privilegios de gran miembro]]></string>
     <string name="login_agreement_prefix">Iniciar sesión significa que aceptas:</string>
     <string name="login_bilibili_agreement">·Acuerdo de cuenta y comunidad de BiliBili</string>
     <string name="login_privacy_agreement">·《Política de Privacidad de BILIBILIAS》</string>

@@ -23,7 +23,7 @@ Tap Agree if you have read and accept this notice. Declining does not affect loc
     <string name="login_cookie_title">Bilibili Cookie Login</string>
     <string name="login_use_cookie">Login with Cookie</string>
     <string name="login_after_you_can">After logging in, you can:</string>
-    <string name="login_benefits"><![CDATA[·Support higher quality and bitrate videos\n·Support anime caching\n·Support big member privileges\n·Support roaming services]]></string>
+    <string name="login_benefits"><![CDATA[·Support higher quality and bitrate videos\n·Support anime caching\n·Support big member privileges]]></string>
     <string name="login_agreement_prefix">Logging in means that you agree to:</string>
     <string name="login_bilibili_agreement">·Bilibili Account and Community Agreements</string>
     <string name="login_privacy_agreement">·《BILIBILIAS Privacy Agreement》</string>

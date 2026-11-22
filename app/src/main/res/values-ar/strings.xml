@@ -23,7 +23,7 @@ Tap Agree if you have read and accept this notice. Declining does not affect loc
     <string name="login_cookie_title">تسجيل الدخول عبر ملفات تعريف الارتباط لـ Bilibili</string>
     <string name="login_use_cookie">تسجيل الدخول بالكوكيز</string>
     <string name="login_after_you_can">بعد تسجيل الدخول يمكنك:</string>
-    <string name="login_benefits"><![CDATA[·دعم فيديوهات بجودة أعلى ومعدل نقل أعلى\n·دعم تخزين الرسوم المتحركة\n·استخدام مزايا العضوية المميزة\n·استخدام خدمة التجوال]]></string>
+    <string name="login_benefits"><![CDATA[·دعم فيديوهات بجودة أعلى ومعدل نقل أعلى\n·دعم تخزين الرسوم المتحركة\n·استخدام مزايا العضوية المميزة]]></string>
     <string name="login_agreement_prefix">تسجيل الدخول يعني موافقتك على:</string>
     <string name="login_bilibili_agreement">·اتفاقيات حساب ومجتمع Bilibili</string>
     <string name="login_privacy_agreement">·《اتفاقية الخصوصية BILIBILIAS》</string>
