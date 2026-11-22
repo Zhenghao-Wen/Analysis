@@ -281,7 +281,8 @@ class QRCodeLoginViewModel(
             while (isActive && !finish) {
                 qrCodeLoginRepository.getQRScanState(uiState.selectedLoginPlatform, qrcodeKey)
                     .collect {
-                        _qrCodeScanInfoState.emit(it)
+                        // 必须先处理 Cookie 再 emit：界面收到状态后会立刻去取用户信息，
+                        // 若此时 Cookie 还没落到内存/客户端，就会判定未登录。
                         when (it) {
                             is NetWorkResult.Success<*> -> {
                                 handleHeaderCookie(it.responseData?.responseHeader)
@@ -293,6 +294,7 @@ class QRCodeLoginViewModel(
 
                             else -> {}
                         }
+                        _qrCodeScanInfoState.emit(it)
                     }
                 delay(3000L)
             }
