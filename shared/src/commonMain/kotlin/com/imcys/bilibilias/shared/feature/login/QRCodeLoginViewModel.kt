@@ -248,10 +248,14 @@ class QRCodeLoginViewModel(
         viewModelScope.launch { sendToastEvent(message) }
     }
 
-    fun saveQRCodeImageToGallery() {
+    fun saveQRCodeImageToGallery(darkColorArgb: Long, lightColorArgb: Long) {
         // 传入的是「待编码内容」而非图片地址：二维码由本地生成，不再请求云端出图服务。
-        // 颜色与静区由 defaultQrOptions / QrQuietZoneModules 统一决定（始终浅底深色）。
-        saveQRCodeImageToGalleryByPlatform(getQRCodeContentForScan())
+        // 颜色由界面传入（与屏幕显示同一套 Material 配色），保证导出图与显示一致。
+        saveQRCodeImageToGalleryByPlatform(
+            qrCodeContent = getQRCodeContentForScan(),
+            darkColorArgb = darkColorArgb,
+            lightColorArgb = lightColorArgb,
+        )
     }
 
     fun goToScanQR() {

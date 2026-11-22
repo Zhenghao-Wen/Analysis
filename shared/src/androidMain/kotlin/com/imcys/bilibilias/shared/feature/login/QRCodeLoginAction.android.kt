@@ -10,9 +10,11 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import io.github.alexzhirkevich.qrose.QrCodePainter
@@ -27,11 +29,15 @@ import java.io.FileOutputStream
  * 二维码由本机用 qrose 纯本地编码生成，不再请求 pan.misakamoe.com 出图，
  * 因此也不会把带 qrcode_key 的登录地址发给第三方。
  */
-internal actual fun saveQRCodeImageToGalleryByPlatform(qrCodeContent: String?): Boolean {
+internal actual fun saveQRCodeImageToGalleryByPlatform(
+    qrCodeContent: String?,
+    darkColorArgb: Long,
+    lightColorArgb: Long,
+): Boolean {
     if (qrCodeContent.isNullOrBlank()) return false
     return runCatching {
         val application = getKoin().get<Application>()
-        val bitmap = renderQrCodeBitmap(qrCodeContent)
+        val bitmap = renderQrCodeBitmap(qrCodeContent, darkColorArgb, lightColorArgb)
         saveBitmapToGallery(application, bitmap)
         true
     }.getOrDefault(false)
@@ -41,21 +47,30 @@ internal actual fun saveQRCodeImageToGalleryByPlatform(qrCodeContent: String?): 
  * 用 qrose 在本地把二维码内容渲染成位图（不联网）。
  *
  * 说明：
- * - 底色固定白色、前景固定黑色（[QrForegroundColor] / [QrBackgroundColor]），
- *   因此无论应用主题是深色还是浅色，导出图片都是浅底深色，可直接扫码；
+ * - 颜色由界面传入（[QrColorPalette]），与屏幕显示完全一致；
+ *   palette 由 qrColorPalette() 按主题挑选，保证「深前景 + 浅背景」的非反色二维码；
  * - 四周按「4 个模块」的静区留白（[qrCodeQuietZonePx]），避免贴边导致识别率下降；
  * - 此处**新建** QrCodePainter 而不是复用界面上那个：CachedPainter 会缓存
  *   DrawScope 与绘制尺寸，复用到不同尺寸的 Canvas 上可能命中过期缓存。
  */
-private fun renderQrCodeBitmap(content: String, sizePx: Int = 1024): Bitmap {
+private fun renderQrCodeBitmap(
+    content: String,
+    darkColorArgb: Long,
+    lightColorArgb: Long,
+    sizePx: Int = 1024,
+): Bitmap {
+    val palette = QrColorPalette(
+        foreground = Color(darkColorArgb),
+        background = Color(lightColorArgb),
+    )
     val quietPx = qrCodeQuietZonePx(sizePx, qrCodeModuleCount(content))
     val innerPx = (sizePx - 2 * quietPx).coerceAtLeast(1f)
 
     // 屏幕显示用 0.92 缩放留白；导出时缩放交给外层 quietPx 控制
-    val painter = QrCodePainter(data = content, options = defaultQrOptions(scale = 1f))
+    val painter = QrCodePainter(data = content, options = defaultQrOptions(palette, scale = 1f))
     val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-    // 先铺白底，保证 JPEG 压缩后底色仍是纯白
-    Canvas(bitmap).drawColor(android.graphics.Color.WHITE)
+    // 先用二维码背景色铺满，避免 JPEG 把透明区域压成黑色
+    Canvas(bitmap).drawColor(palette.background.toArgb())
     CanvasDrawScope().draw(
         density = Density(density = 1f),
         layoutDirection = LayoutDirection.Ltr,

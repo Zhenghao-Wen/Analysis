@@ -62,6 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
@@ -170,6 +171,12 @@ fun QRCodeLoginScreen(
         }
     }
 
+    // 二维码配色：从当前 Material 主题里选一对「深前景 + 浅背景」的颜色，
+    // 既保留 Material 色系，又保证不是反色二维码。保存到相册时传入同一组颜色。
+    val qrPalette = rememberQrColorPalette()
+    val qrDarkColorArgb = qrPalette.foreground.toArgb().toLong()
+    val qrLightColorArgb = qrPalette.background.toArgb().toLong()
+
     QRLoginScaffold(onToBack, onToCookieLogin) {
         Column(
             Modifier
@@ -188,7 +195,7 @@ fun QRCodeLoginScreen(
                                 agreePrivacyPolicy,
                                 updateLoginPlatform = vm::updateLoginPlatform,
                                 updateQrCode = vm::getLoadLoginQRCodeInfo,
-                                saveQRCodeImage = { vm.saveQRCodeImageToGallery() },
+                                saveQRCodeImage = { vm.saveQRCodeImageToGallery(qrDarkColorArgb, qrLightColorArgb) },
                                 goScanQR = { vm.goToScanQR() },
                                 updateAgreePrivacyPolicy = { state ->
                                     agreePrivacyPolicy = state
@@ -206,7 +213,7 @@ fun QRCodeLoginScreen(
                                 agreePrivacyPolicy,
                                 updateLoginPlatform = vm::updateLoginPlatform,
                                 updateQrCode = vm::getLoadLoginQRCodeInfo,
-                                saveQRCodeImage = { vm.saveQRCodeImageToGallery() },
+                                saveQRCodeImage = { vm.saveQRCodeImageToGallery(qrDarkColorArgb, qrLightColorArgb) },
                                 goScanQR = { vm.goToScanQR() },
                                 updateAgreePrivacyPolicy = { state ->
                                     agreePrivacyPolicy = state
